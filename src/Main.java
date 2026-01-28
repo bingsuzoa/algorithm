@@ -1,61 +1,93 @@
 import java.util.*;
 import java.io.*;
 
-
 class Main {
-    static boolean[][] dp;
+    static int N,M,P;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         StringTokenizer st = new StringTokenizer(br.readLine());
+        N = Integer.parseInt(st.nextToken());
+        M = Integer.parseInt(st.nextToken());
+        P = Integer.parseInt(st.nextToken());
 
-        int N = Integer.parseInt(st.nextToken());
-        int K = Integer.parseInt(st.nextToken());
+        List<Game> games = new ArrayList<>();
+        for(int i = 0; i < N; i++) {
+            StringTokenizer st1 = new StringTokenizer(br.readLine());
+            games.add(new Game(st1.nextToken()));
+            for(int j = 0; j < M; j++) {
+                games.get(i).add(Integer.parseInt(st1.nextToken()));
+            }
+        }
+        Collections.sort(games);
 
-        dp = new boolean[N+1][K+1];
 
-        dp[1][1] = true;
-
-        for(int i = 2; i < dp.length; i++){
-            for(int j = 2; j < dp[i].length; j++) {
-                if(dp[i-1][j-1]) {
-                    dp[i][j] = true;
+        StringBuilder sb = new StringBuilder();
+        int finishCount = 0;
+        while(finishCount < N) {
+            long[] board = new long[games.size()];
+            long min = Long.MAX_VALUE;
+            int idx = 0;
+            for(int i = 0; i < games.size(); i++) {
+                Game game = games.get(i);
+                if(game.isOut) continue;
+                long num = game.peekNum();
+                board[i] = num;
+                if(min > num) {
+                    idx = i;
+                    min = num;
+                }
+            }
+            for(int i = 0; i < games.size(); i++) {
+                Game game = games.get(i);
+                if(game.isOut) continue;
+                if(idx == i) {
+                    game.pollNum();
+                    if(game.isEmpty()) {
+                        sb.append(game.name).append(" ");
+                        game.isOut = true;
+                        finishCount++;
+                    }
                 } else {
-                    isPossible(i, j);
+                    game.pollNum();
+                    long newNum = board[i] + P;
+                    game.add(newNum);
                 }
             }
         }
-
-        if(dp[N][K]) {
-            System.out.println("minigimbob");
-        } else {
-            System.out.println("water");
-        }
+        System.out.println(sb);
     }
-    private static void isPossible(int floor, int opp) {
-        for(int i = 1; i < opp; i++) {
-            if(floor % 2 == 0) {
-                int temp = floor;
-                while(temp > 0) {
-                    temp /= 3;
-                    if(dp[temp][i]) {
-                        dp[floor][opp] = true;
-                        return;
-                    }
-                }
-            } else {
-                int temp = floor;
-                while(temp > 0) {
-                    temp = (temp + 3) / 4;
-                    if(dp[temp][i]) {
-                        dp[floor][opp] = true;
-                        return;
-                    }
-                }
-            }
+}
 
-        }
+class Game implements Comparable<Game> {
+    String name;
+    PriorityQueue<Long> pq;
+    boolean isOut = false;
 
+    public Game(String name) {
+        this.name = name;
+        pq = new PriorityQueue<>((o1,o2) -> {
+            return Long.compare(o1,o2);
+        });
+    }
+
+    public void add(long num) {
+        pq.add(num);
+    }
+
+    public boolean isEmpty() {
+        return pq.isEmpty();
+    }
+    public long peekNum() {
+        return pq.peek();
+    }
+    public long pollNum() {
+        return pq.poll();
+    }
+
+    @Override
+    public int compareTo(Game o) {
+        return this.name.compareTo(o.name);
     }
 }
