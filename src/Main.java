@@ -2,92 +2,28 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static int N,M,P;
+    static int H,W,N,M;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         StringTokenizer st = new StringTokenizer(br.readLine());
+        H = Integer.parseInt(st.nextToken());
+        W = Integer.parseInt(st.nextToken());
         N = Integer.parseInt(st.nextToken());
         M = Integer.parseInt(st.nextToken());
-        P = Integer.parseInt(st.nextToken());
 
-        List<Game> games = new ArrayList<>();
-        for(int i = 0; i < N; i++) {
-            StringTokenizer st1 = new StringTokenizer(br.readLine());
-            games.add(new Game(st1.nextToken()));
-            for(int j = 0; j < M; j++) {
-                games.get(i).add(Integer.parseInt(st1.nextToken()));
-            }
+        long x = (H / (N + 1));
+        long y = (W / (M + 1));
+        if((H % (N + 1)) != 0) {
+            x ++;
         }
-        Collections.sort(games);
 
-
-        StringBuilder sb = new StringBuilder();
-        int finishCount = 0;
-        while(finishCount < N) {
-            long[] board = new long[games.size()];
-            long min = Long.MAX_VALUE;
-            int idx = 0;
-            for(int i = 0; i < games.size(); i++) {
-                Game game = games.get(i);
-                if(game.isOut) continue;
-                long num = game.peekNum();
-                board[i] = num;
-                if(min > num) {
-                    idx = i;
-                    min = num;
-                }
-            }
-            for(int i = 0; i < games.size(); i++) {
-                Game game = games.get(i);
-                if(game.isOut) continue;
-                if(idx == i) {
-                    game.pollNum();
-                    if(game.isEmpty()) {
-                        sb.append(game.name).append(" ");
-                        game.isOut = true;
-                        finishCount++;
-                    }
-                } else {
-                    game.pollNum();
-                    long newNum = board[i] + P;
-                    game.add(newNum);
-                }
-            }
+        if(W % (M + 1) != 0) {
+            y++;
         }
-        System.out.println(sb);
-    }
-}
 
-class Game implements Comparable<Game> {
-    String name;
-    PriorityQueue<Long> pq;
-    boolean isOut = false;
+        System.out.println(x * y);
 
-    public Game(String name) {
-        this.name = name;
-        pq = new PriorityQueue<>((o1,o2) -> {
-            return Long.compare(o1,o2);
-        });
-    }
-
-    public void add(long num) {
-        pq.add(num);
-    }
-
-    public boolean isEmpty() {
-        return pq.isEmpty();
-    }
-    public long peekNum() {
-        return pq.peek();
-    }
-    public long pollNum() {
-        return pq.poll();
-    }
-
-    @Override
-    public int compareTo(Game o) {
-        return this.name.compareTo(o.name);
     }
 }
