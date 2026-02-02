@@ -8,24 +8,42 @@ class Main {
 
         int N = Integer.parseInt(br.readLine());
 
-        if(N == 1 || N == 3 || N == 5) {
-            System.out.println("SK");
-            return;
-        }
-        if(N == 2 || N == 4) {
-            System.out.println("CY");
-            return;
-        }
+        Queue<Integer> queue = new LinkedList<>();
+        List<Integer> list = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        while(N --> 0) {
+            int count = 0;
+            queue.clear();
+            list.clear();
+            StringTokenizer st = new StringTokenizer(br.readLine());
+            int order = Integer.parseInt(st.nextToken());
+            while(st.hasMoreTokens()) {
+                queue.add(Integer.parseInt(st.nextToken()));
+            }
 
-        N = N % 6;
+            while(!queue.isEmpty()) {
+                int num = queue.poll();
+                if(list.isEmpty()) {
+                    list.add(num);
+                    continue;
+                }
 
-        if(N == 1 || N == 3 || N == 5) {
-            System.out.println("SK");
-            return;
+                int height = list.get(list.size() -1);
+                if(height <= num) {
+                    list.add(num);
+                    continue;
+                }
+                for(int i = 0; i < list.size(); i++) {
+                    int pair = list.get(i);
+                    if(pair >= num) {
+                        count += (list.size() - i);
+                        list.add(i, num);
+                        break;
+                    }
+                }
+            }
+            sb.append(order + " " + count).append("\n");
         }
-        if(N == 0 || N == 2 || N == 4) {
-            System.out.println("CY");
-            return;
-        }
+        System.out.println(sb);
     }
 }
