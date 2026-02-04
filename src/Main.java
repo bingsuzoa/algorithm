@@ -2,74 +2,87 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static char[] chars = new char[]{'a', 'e', 'i', 'o', 'u'};
-    static Set<Character> set = new HashSet<>();
+    static char[][] graph;
+    static int[] answer = new int[5];
+    static StringBuilder sb = new StringBuilder();
 
     public static void main(String[] args) throws IOException {
-
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        for(char c : chars) {
-            set.add(c);
-        }
+        int N = Integer.parseInt(br.readLine());
+        graph = new char[N][N];
 
-        while(true) {
+        for(int i = 0; i < graph.length; i++) {
             String input = br.readLine();
-
-            if(input.equals("end")) {
-                break;
+            for(int j = 0; j < graph[i].length; j++) {
+                graph[i][j] = input.charAt(j);
             }
-            if(isAvail(input)) {
-                System.out.println("<" + input + "> is acceptable.");
-            } else {
-                System.out.println("<" + input + "> is not acceptable.");
-            }
-
         }
-    }
-    private static boolean isAvail(String input) {
 
-        char[] inputToChar = input.toCharArray();
-        //모음 하나 반드시 포함
-        boolean isContain = false;
-        for(char c : chars) {
-            for(int i = 0; i  < inputToChar.length; i++) {
-                if(inputToChar[i] == c) {
-                    isContain = true;
+
+        boolean endArm = false;
+        int heartX = -1;
+        int heartY = -1;
+        for(int i = 0; i < graph.length; i++) {
+            for(int j = 0; j < graph[i].length; j++) {
+                if(graph[i][j] == '*') {
+                    heartX = i + 1;
+                    heartY = j;
+                    sb.append((heartX + 1) + " " + (heartY + 1)).append("\n");
+                    countLine(heartX + 1, heartY);
+                    countArms(heartX, heartY);
+                    countLegs(heartX, heartY);
+                    endArm = true;
                     break;
                 }
             }
-        }
-        if(!isContain) {
-            return false;
-        }
-        //모음이 연속 3개, 자음이 연속 3개 불가
-        int size = inputToChar.length;
-        for(int i = 0; i < inputToChar.length; i++) {
-            if(i + 1 < size && i + 2 < size) {
-                char first = inputToChar[i];
-                char second = inputToChar[i+1];
-                char third = inputToChar[i+2];
-
-                if(set.contains(first) && set.contains(second) && set.contains(third)) {
-                    return false;
-                }
-                if(!set.contains(first) && !set.contains(second) && !set.contains(third)) {
-                    return false;
-                }
+            if(endArm) {
+                break;
             }
         }
 
-        //같은 글자가 연속적으로 두번 오면 안되나, ee 와 oo는 허용한다.
-        for(int i = 0; i < inputToChar.length - 1; i++) {
-            char first = inputToChar[i];
-            char second = inputToChar[i+1];
-            if(first == second) {
-                if(first != 'e' && first != 'o') {
-                    return false;
-                }
+        for(int value : answer) {
+            sb.append(value + " ");
+        }
+        System.out.println(sb);
+    }
+    private static void countLegs(int x, int heartPos) {
+        int left = 0;
+        int right = 0;
+        for(int i = x+1; i < graph.length; i++) {
+            if(graph[i][heartPos -1] == '*') {
+                left++;
+            }
+            if(graph[i][heartPos + 1] == '*') {
+                right++;
             }
         }
-        return true;
+        answer[3] = left;
+        answer[4] = right;
+    }
+    private static void countArms(int x, int y) {
+        int left = 0;
+        int right = 0;
+        for(int j = y - 1; j >= 0; j--) {
+            if(graph[x][j] == '*') {
+                left++;
+            }
+        }
+        for(int j = y + 1; j < graph[0].length; j++) {
+            if(graph[x][j] == '*') {
+                right ++;
+            }
+        }
+        answer[0] = left;
+        answer[1] = right;
+    }
+    private static void countLine(int x, int y) {
+        int count = 0;
+        for(int i = x; i < graph.length; i++) {
+            if(graph[i][y] == '*') {
+                count++;
+            }
+        }
+        answer[2] = count;
     }
 }
