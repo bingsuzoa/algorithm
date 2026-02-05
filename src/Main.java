@@ -2,36 +2,48 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static long[] roads;
-    static long[] liters;
+    static int MOD = 1000000;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
         int N = Integer.parseInt(br.readLine());
 
-        roads = new long[N - 1];
-        liters = new long[N];
+        int[] dp = new int[N + 1];
+        Arrays.fill(dp, MOD);
 
-        StringTokenizer st = new StringTokenizer(br.readLine());
-        StringTokenizer st1 = new StringTokenizer(br.readLine());
-
-        for(int i = 0; i < roads.length; i++) {
-            roads[i] = Long.parseLong(st.nextToken());
+        dp[0] = MOD;
+        dp[1] = MOD;
+        if(N <= 1) {
+            System.out.println(-1);
+            return;
         }
-        for(int i =0 ; i < liters.length; i++) {
-            liters[i] = Long.parseLong(st1.nextToken());
+        dp[2] = 1;
+        if(N == 2) {
+            System.out.println(1);
+            return;
         }
+        if(N == 3) {
+            System.out.println(-1);
+            return;
+        }
+        if(N == 4) {
+            System.out.println(2);
+            return;
+        }
+        dp[5] = 1;
 
-        long answer = roads[0] * liters[0];
-        long min = liters[0];
-
-        for(int i = 1; i < liters.length - 1; i++) {
-            long curCost = liters[i];
-            if(min > curCost) {
-                min = curCost;
+        for(int i = 3; i < dp.length; i++) {
+            dp[i] = Math.min(dp[i], dp[i-2] + 1);
+            if(i - 5 >= 0) {
+                dp[i] = Math.min(dp[i], dp[i-5] + 1);
             }
-            answer += (min * roads[i]);
         }
-        System.out.println(answer);
+
+        if(dp[N] == MOD) {
+            System.out.println(-1);
+        } else {
+            System.out.println(dp[N]);
+        }
     }
 }
