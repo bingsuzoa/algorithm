@@ -2,41 +2,31 @@ import java.util.*;
 import java.io.*;
 
 class Main {
+    static int[] graph;
 
     public static void main(String[] args) throws IOException {
-
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
+        int N = Integer.parseInt(br.readLine());
+        int M = Integer.parseInt(br.readLine());
+
+        graph = new int[M];
         StringTokenizer st = new StringTokenizer(br.readLine());
-        int N = Integer.parseInt(st.nextToken());
-        int K = Integer.parseInt(st.nextToken());
-
-        int[] board = new int[N];
-        Map<Integer, Integer> map = new HashMap<>();
-        StringTokenizer st1 = new StringTokenizer(br.readLine());
-        for(int i = 0; i < board.length; i++) {
-            board[i] = Integer.parseInt(st1.nextToken());
-            map.putIfAbsent(board[i], 0);
+        for(int i =0 ; i < graph.length; i++) {
+            graph[i] = Integer.parseInt(st.nextToken());
         }
 
-        int left = 0;
-        int right = 0;
+        int min = Math.max(graph[0], N - graph[graph.length -1]);
 
-        int max = 0;
-        while(right < board.length) {
-            int num = board[right];
-            int count = map.get(num);
-            map.put(num, count + 1);
+        for(int i = 1; i < graph.length; i++) {
+            int road = graph[i] - graph[i-1];
 
-            while(map.get(num) > K) {
-                int value = board[left];
-                map.put(value, map.get(value) -1);
-                left++;
+            if(min * 2 < road) {
+                int diff = road - (min * 2);
+                min += (int)Math.ceil((double)diff / 2);
             }
-            max = Math.max(max, right - left + 1);
-            right++;
         }
+        System.out.println(min);
 
-        System.out.println(max);
     }
 }
