@@ -11,52 +11,40 @@ class Main {
         int N = Integer.parseInt(st.nextToken());
         int K = Integer.parseInt(st.nextToken());
 
-        Word[] words = new Word[N];
-        Map<String, Integer> map = new HashMap<>();
-        for(int i =0 ; i < N; i++) {
-            words[i] = new Word(br.readLine());
-            map.put(words[i].word, map.getOrDefault(words[i].word, 0) + 1);
+        int[] graph = new int[N];
+        StringTokenizer st1 = new StringTokenizer(br.readLine());
+        for(int i =0 ; i < graph.length; i++) {
+            graph[i] = Integer.parseInt(st1.nextToken());
         }
 
-        for(Word word : words) {
-            word.count = map.get(word.word);
-        }
-        Arrays.sort(words);
-
-        StringBuilder sb = new StringBuilder();
-        Set<String> set = new HashSet<>();
-        for(Word word : words) {
-            if(word.length < K) {
-                continue;
+        int left = 0;
+        int right = 0;
+        long answer = 0;
+        long sum = 0;
+        int duration = 0;
+        while(right < graph.length) {
+            int count = right - left + 1;
+            if(count <= K) {
+                sum += graph[right];
+                if(count == K) {
+                    if(answer < sum) {
+                        answer = sum;
+                        duration = 1;
+                    } else if(answer == sum) {
+                        duration ++;
+                    }
+                }
+                right++;
+            } else {
+                sum -= graph[left];
+                left++;
             }
-            if(!set.contains(word.word)) {
-                set.add(word.word);
-                sb.append(word.word).append("\n");
-            }
         }
-        System.out.println(sb);
-    }
-}
 
-class Word implements Comparable<Word> {
-    String word;
-    int count;
-    int length;
-
-    public Word(String word) {
-        this.word = word;
-        this.length = word.length();
-        this.count = 0;
-    }
-
-    @Override
-    public int compareTo(Word o) {
-        if(o.count == this.count) {
-            if(o.length == this.length) {
-                return this.word.compareTo(o.word);
-            }
-            return o.length - this.length;
+        if(answer == 0) {
+            System.out.println("SAD");
+            return;
         }
-        return o.count - this.count;
+        System.out.println(answer + "\n" + duration);
     }
 }
