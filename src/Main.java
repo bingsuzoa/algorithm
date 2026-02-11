@@ -3,48 +3,74 @@ import java.io.*;
 
 class Main {
 
+
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        StringTokenizer st = new StringTokenizer(br.readLine());
+        int N = Integer.parseInt(br.readLine());
+        String input = br.readLine();
 
-        int N = Integer.parseInt(st.nextToken());
-        int K = Integer.parseInt(st.nextToken());
+        char[] graph = new char[N];
 
-        int[] graph = new int[N];
-        StringTokenizer st1 = new StringTokenizer(br.readLine());
-        for(int i =0 ; i < graph.length; i++) {
-            graph[i] = Integer.parseInt(st1.nextToken());
-        }
+        boolean isBlue = false;
+        boolean isRed = false;
 
-        int left = 0;
-        int right = 0;
-        long answer = 0;
-        long sum = 0;
-        int duration = 0;
-        while(right < graph.length) {
-            int count = right - left + 1;
-            if(count <= K) {
-                sum += graph[right];
-                if(count == K) {
-                    if(answer < sum) {
-                        answer = sum;
-                        duration = 1;
-                    } else if(answer == sum) {
-                        duration ++;
-                    }
-                }
-                right++;
-            } else {
-                sum -= graph[left];
-                left++;
+        for(int i = 0; i < graph.length; i++) {
+            char c = input.charAt(i);
+            graph[i] = c;
+            if(c == 'R') {
+                isRed = true;
+            }
+            if(c == 'B') {
+                isBlue = true;
             }
         }
 
-        if(answer == 0) {
-            System.out.println("SAD");
+        if(!isBlue || !isRed) {
+            System.out.println(0);
             return;
         }
-        System.out.println(answer + "\n" + duration);
+
+        long min = Integer.MAX_VALUE;
+        long first = 0;
+        boolean isFirst = false;
+        int start = 0;
+        int end = 0;
+        long redSum = 0;
+        long blueSum = 0;
+        while(end < graph.length) {
+            if(graph[start] == graph[end]) {
+                end ++;
+                if(end == graph.length) {
+                    min = Math.min(min, Math.min(redSum, blueSum));
+                    if(graph[start] == 'R') {
+                        redSum += end - start;
+                    } else {
+                        blueSum += end - start;
+                    }
+                }
+            } else {
+                int count = end - start;
+                if(graph[start] == 'R') {
+                    redSum += count;
+                } else {
+                    blueSum += count;
+                }
+                if(!isFirst) {
+                    isFirst = true;
+                    first = count;
+                }
+                start = end;
+            }
+        }
+
+
+        if(graph[0] == 'R') {
+            redSum -= first;
+        } else {
+            blueSum -= first;
+        }
+        min = Math.min(min, Math.min(redSum, blueSum));
+        System.out.println(min);
     }
 }
