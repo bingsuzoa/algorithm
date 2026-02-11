@@ -3,74 +3,49 @@ import java.io.*;
 
 class Main {
 
-
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        int N = Integer.parseInt(br.readLine());
-        String input = br.readLine();
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int N = Integer.parseInt(st.nextToken());
+        int d = Integer.parseInt(st.nextToken());
+        int k = Integer.parseInt(st.nextToken());
+        int coupon = Integer.parseInt(st.nextToken());
 
-        char[] graph = new char[N];
-
-        boolean isBlue = false;
-        boolean isRed = false;
-
-        for(int i = 0; i < graph.length; i++) {
-            char c = input.charAt(i);
-            graph[i] = c;
-            if(c == 'R') {
-                isRed = true;
-            }
-            if(c == 'B') {
-                isBlue = true;
-            }
+        int[] graph = new int[N * 2];
+        Map<Integer, Integer> map = new HashMap<>();
+        for(int i = 0; i< N; i++) {
+            graph[i] = Integer.parseInt(br.readLine());
+            graph[i + N] = graph[i];
+            map.put(graph[i], 0);
         }
 
-        if(!isBlue || !isRed) {
-            System.out.println(0);
-            return;
-        }
-
-        long min = Integer.MAX_VALUE;
-        long first = 0;
-        boolean isFirst = false;
         int start = 0;
         int end = 0;
-        long redSum = 0;
-        long blueSum = 0;
-        while(end < graph.length) {
-            if(graph[start] == graph[end]) {
-                end ++;
-                if(end == graph.length) {
-                    min = Math.min(min, Math.min(redSum, blueSum));
-                    if(graph[start] == 'R') {
-                        redSum += end - start;
+        Set<Integer> set = new HashSet<>();
+        int max = 0;
+        int count = 0;
+        while(start < N) {
+            count = end - start + 1;
+            if(count <= k) {
+                map.put(graph[end], map.get(graph[end]) + 1);
+                set.add(graph[end]);
+                if(count == k) {
+                    if(!set.contains(coupon)) {
+                        max = Math.max(max, set.size() + 1);
                     } else {
-                        blueSum += end - start;
+                        max = Math.max(max, set.size());
                     }
                 }
+                end++;
             } else {
-                int count = end - start;
-                if(graph[start] == 'R') {
-                    redSum += count;
-                } else {
-                    blueSum += count;
+                map.put(graph[start], map.get(graph[start]) -1);
+                if(map.get(graph[start]) == 0) {
+                    set.remove(graph[start]);
                 }
-                if(!isFirst) {
-                    isFirst = true;
-                    first = count;
-                }
-                start = end;
+                start++;
             }
         }
-
-
-        if(graph[0] == 'R') {
-            redSum -= first;
-        } else {
-            blueSum -= first;
-        }
-        min = Math.min(min, Math.min(redSum, blueSum));
-        System.out.println(min);
+        System.out.println(max);
     }
 }
