@@ -3,8 +3,7 @@ import java.io.*;
 
 class Main {
     static int[][] graph;
-    static int[] dx = {1, 1, 1};
-    static int[] dy = {0, -1, 1};
+    static int[][][] dp;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -20,36 +19,43 @@ class Main {
                 graph[i][j] = Integer.parseInt(st1.nextToken());
             }
         }
-
-        Queue<int[]> queue = new LinkedList<>();
-        for(int j = 0; j < M; j++) {
-            queue.add(new int[]{0, j, -1, graph[0][j]});
+        dp = new int[N][M][3];
+        for(int i =0 ; i < dp.length; i++) {
+            for(int j = 0; j < dp[i].length; j++) {
+                Arrays.fill(dp[i][j], 1001);
+            }
         }
 
-        int answer = Integer.MAX_VALUE;
-
-        while(!queue.isEmpty()) {
-            int[] befo = queue.poll();
-            int x = befo[0];
-            int y = befo[1];
-            int dir = befo[2];
-            int cost = befo[3];
-
-            if(x == N-1) {
-                answer = Math.min(answer, cost);
-                continue;
+        for(int j = 0; j < M; j++) {
+            for(int k = 0; k < 3; k++) {
+                dp[0][j][k] = graph[0][j];
             }
+        }
 
-            for(int i = 0; i < 3; i++) {
-                if(dir == i) continue;
-                int nx = x + dx[i];
-                int ny = y + dy[i];
-                if(nx >= N || nx < 0 || ny >= M || ny < 0) continue;
-                queue.add(new int[]{nx, ny, i, cost + graph[nx][ny]});
+        for(int i = 1; i < dp.length; i++) {
+            for(int j = 0; j < dp[i].length; j++) {
+                if(j - 1 >= 0) {
+                    dp[i][j][0] = Math.min(dp[i-1][j-1][1], dp[i][j][0]);
+                    dp[i][j][2] = Math.min(dp[i-1][j-1][1], dp[i][j][2]);
+                }
+                if(j + 1 < dp[0].length) {
+                    dp[i][j][0] = Math.min(dp[i-1][j+1][2], dp[i][j][0]);
+                    dp[i][j][1] = Math.min(dp[i-1][j+1][2], dp[i][j][1]);
+                }
+                dp[i][j][1] = Math.min(dp[i-1][j][0], dp[i][j][1]);
+                dp[i][j][2] = Math.min(dp[i-1][j][0], dp[i][j][2]);
+
+                dp[i][j][0] += graph[i][j];
+                dp[i][j][1] += graph[i][j];
+                dp[i][j][2] += graph[i][j];
             }
-
+        }
+        int answer = 1001;
+        for(int j = 0; j < dp[0].length; j++) {
+            for(int k = 0; k < 3; k++) {
+                answer = Math.min(answer, dp[N-1][j][k]);
+            }
         }
         System.out.println(answer);
-
     }
 }
