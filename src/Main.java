@@ -19,20 +19,27 @@ class Main {
             if(c == 'a') aCount++;
         }
 
-        int size = input.length();
-        for(int i = 0; i < graph.length - aCount; i++) {
-            int start = i;
-            int end = start + aCount;
+        int start = 0;
+        int end = start + aCount - 1;
+        int bCount = 0;
+        for(int i = start; i <= end; i++) {
+            if(graph[i] == 'b') bCount++;
+        }
+        max = Math.min(max, bCount);
 
-            int bCount = 0;
-            for(int j = start; j < end; j++) {
-                if(graph[j] == 'b') {
-                    bCount++;
-                }
+        while(true) {
+            if(graph[start] == 'b') {
+                bCount--;
+            }
+            start++;
+            end ++;
+            if(start >= graph.length || end >= graph.length) break;
+            if(graph[end] == 'b') {
+                bCount++;
             }
             max = Math.min(max, bCount);
         }
-        System.out.println(max);
+        System.out.println (max);
     }
 
 }
