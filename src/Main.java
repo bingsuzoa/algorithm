@@ -2,44 +2,48 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static int max = Integer.MAX_VALUE;
-    static char[] graph;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        String input = br.readLine();
-        graph = new char[input.length() * 2];
+        StringTokenizer st = new StringTokenizer(br.readLine());
 
-        int aCount = 0;
-        for(int i =0 ; i < input.length(); i++) {
-            char c = input.charAt(i);
-            graph[i] = c;
-            graph[i + input.length()] = c;
-            if(c == 'a') aCount++;
-        }
+        int N = Integer.parseInt(st.nextToken());
+        int K = Integer.parseInt(st.nextToken());
 
-        int start = 0;
-        int end = start + aCount - 1;
-        int bCount = 0;
-        for(int i = start; i <= end; i++) {
-            if(graph[i] == 'b') bCount++;
-        }
-        max = Math.min(max, bCount);
+        int[] visited = new int[200000];
+        Arrays.fill(visited, 100010);
+        visited[N] = 0;
 
-        while(true) {
-            if(graph[start] == 'b') {
-                bCount--;
+        Queue<int[]> queue = new LinkedList<>();
+        queue.add(new int[]{N, 0});
+
+        while(!queue.isEmpty()) {
+            int[] cur = queue.poll();
+            int pos = cur[0];
+            int cost = cur[1];
+
+            if(pos == K) {
+                visited[pos] = Math.min(visited[pos], cost);
+                continue;
             }
-            start++;
-            end ++;
-            if(start >= graph.length || end >= graph.length) break;
-            if(graph[end] == 'b') {
-                bCount++;
+
+            int walk = pos + 1;
+            int fly = pos * 2;
+            int back = pos - 1;
+            if(walk < visited.length && visited[walk] > cost + 1) {
+                visited[walk] = cost + 1;
+                queue.add(new int[]{walk, cost + 1});
             }
-            max = Math.min(max, bCount);
+            if(fly < visited.length && visited[fly] > cost + 1) {
+                visited[fly] = cost + 1;
+                queue.add(new int[]{fly, cost + 1});
+            }
+            if(back >= 0 && visited[back] > cost + 1) {
+                visited[back] = cost + 1;
+                queue.add(new int[]{back, cost + 1});
+            }
         }
-        System.out.println (max);
+        System.out.println(visited[K]);
     }
-
 }
