@@ -6,44 +6,50 @@ class Main {
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        StringTokenizer st = new StringTokenizer(br.readLine());
+        String input = br.readLine();
 
-        int N = Integer.parseInt(st.nextToken());
-        int K = Integer.parseInt(st.nextToken());
+        int[] graph = new int[input.length()];
 
-        int[] visited = new int[200000];
-        Arrays.fill(visited, 100010);
-        visited[N] = 0;
-
-        Queue<int[]> queue = new LinkedList<>();
-        queue.add(new int[]{N, 0});
-
-        while(!queue.isEmpty()) {
-            int[] cur = queue.poll();
-            int pos = cur[0];
-            int cost = cur[1];
-
-            if(pos == K) {
-                visited[pos] = Math.min(visited[pos], cost);
-                continue;
+        int zero = 0;
+        int one = 0;
+        int zeroIdx = 0;
+        int oneIdx = input.length() -1;
+        for(int i = 0; i < input.length(); i++) {
+            graph[i] = input.charAt(i)-'0';
+            if(graph[i] == 0) {
+                zero++;
+                zeroIdx = i;
             }
-
-            int walk = pos + 1;
-            int fly = pos * 2;
-            int back = pos - 1;
-            if(walk < visited.length && visited[walk] > cost + 1) {
-                visited[walk] = cost + 1;
-                queue.add(new int[]{walk, cost + 1});
-            }
-            if(fly < visited.length && visited[fly] > cost + 1) {
-                visited[fly] = cost + 1;
-                queue.add(new int[]{fly, cost + 1});
-            }
-            if(back >= 0 && visited[back] > cost + 1) {
-                visited[back] = cost + 1;
-                queue.add(new int[]{back, cost + 1});
+            if(graph[i] == 1) {
+                one++;
+                oneIdx = Math.min(oneIdx, i);
             }
         }
-        System.out.println(visited[K]);
+        zero /= 2;
+        one /= 2;
+
+        for(int i = zeroIdx; i >= 0; i--) {
+            if(graph[i] == 0) {
+                if(zero <= 0) break;
+                graph[i] = -1;
+                zero--;
+            }
+        }
+
+        for(int i = oneIdx; i < graph.length; i++) {
+            if(graph[i] == 1) {
+                if(one <= 0) break;
+                graph[i] = -1;
+                one--;
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < graph.length; i++) {
+            if(graph[i] != -1) {
+                sb.append(graph[i]);
+            }
+        }
+        System.out.println(sb);
     }
 }
