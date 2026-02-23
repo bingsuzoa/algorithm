@@ -2,38 +2,47 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static int[][] dp;
 
     public static void main(String[] args) throws IOException {
+
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
 
-        dp = new int[10001][4];
+        int N = Integer.parseInt(st.nextToken());
+        int K = Integer.parseInt(st.nextToken());
 
-        int N = Integer.parseInt(br.readLine());
+        Queue<int[]> queue = new LinkedList<>();
+        queue.add(new int[]{N, 0});
 
-        dp[1][1] = 1;
-        dp[2][1] = 1;
-        dp[2][2] = 1;
-        dp[3][2] = 1;
-        dp[3][1] = 1;
-        dp[3][3] = 1;
 
-        for(int i = 4; i < dp.length; i++) {
-            dp[i][1] = dp[i-1][1];
-            dp[i][2] = dp[i-2][1] + dp[i-2][2];
-            dp[i][3] = dp[i-3][1] + dp[i-3][2] + dp[i-3][3];
-        }
-        StringBuilder sb = new StringBuilder();
+        int[] graph = new int[100001];
+        Arrays.fill(graph, 100002);
 
-        while(N --> 0) {
-            int n = Integer.parseInt(br.readLine());
-            int sum = 0;
-            for(int j = 0; j < dp[0].length; j++) {
-                sum += dp[n][j];
+        while(!queue.isEmpty()) {
+            int[] cur = queue.poll();
+            int pos = cur[0];
+            int time = cur[1];
+
+            if(graph[pos] <= time) continue;
+            graph[pos] = time;
+
+            if(pos == 0) {
+                if(pos + 1 < graph.length) {
+                    queue.add(new int[]{pos + 1, time + 1});
+                }
+            } else {
+                if(pos + 1 < graph.length) {
+                    queue.add(new int[]{pos + 1, time + 1});
+                }
+                if(pos - 1 >= 0) {
+                    queue.add(new int[]{pos -1, time + 1});
+                }
+                if(pos * 2 < graph.length) {
+                    queue.add(new int[]{pos * 2, time});
+                }
             }
-            sb.append(sum).append("\n");
-        }
-        System.out.println(sb);
-    }
 
+        }
+        System.out.println(graph[K]);
+    }
 }
