@@ -2,47 +2,37 @@ import java.util.*;
 import java.io.*;
 
 class Main {
+    static int answer = 0;
 
     public static void main(String[] args) throws IOException {
-
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        StringTokenizer st = new StringTokenizer(br.readLine());
 
-        int N = Integer.parseInt(st.nextToken());
-        int K = Integer.parseInt(st.nextToken());
+        String start = br.readLine();
+        String end = br.readLine();
 
-        Queue<int[]> queue = new LinkedList<>();
-        queue.add(new int[]{N, 0});
-
-
-        int[] graph = new int[100001];
-        Arrays.fill(graph, 100002);
-
-        while(!queue.isEmpty()) {
-            int[] cur = queue.poll();
-            int pos = cur[0];
-            int time = cur[1];
-
-            if(graph[pos] <= time) continue;
-            graph[pos] = time;
-
-            if(pos == 0) {
-                if(pos + 1 < graph.length) {
-                    queue.add(new int[]{pos + 1, time + 1});
-                }
-            } else {
-                if(pos + 1 < graph.length) {
-                    queue.add(new int[]{pos + 1, time + 1});
-                }
-                if(pos - 1 >= 0) {
-                    queue.add(new int[]{pos -1, time + 1});
-                }
-                if(pos * 2 < graph.length) {
-                    queue.add(new int[]{pos * 2, time});
-                }
-            }
-
-        }
-        System.out.println(graph[K]);
+        System.out.println(dfs(start, end) ? 1 : 0);
     }
+
+
+    private static boolean dfs(String start, String end) {
+        boolean flag = false;
+        if(start.length() == end.length()) {
+            if(start.equals(end)) {
+                return true;
+            }
+            return false;
+        }
+
+        if(end.charAt(end.length() -1) == 'A') {
+            flag |= dfs(start, end.substring(0, end.length() -1));
+        }
+        if(end.charAt(0) == 'B') {
+            StringBuilder sb = new StringBuilder();
+            sb.append(end).reverse();
+            String result = sb.toString();
+            flag |= dfs(start, result.substring(0, result.length()-1));
+        }
+        return flag;
+    }
+
 }
