@@ -2,71 +2,60 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static int N, M;
-    static Map<Integer, Integer> stairs;
-    static Map<Integer, Integer> snakes;
+    static Map<Character, List<Integer>> map;
+    static int K;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        StringTokenizer st = new StringTokenizer(br.readLine());
+        int T = Integer.parseInt(br.readLine());
 
-        N = Integer.parseInt(st.nextToken());
-        M = Integer.parseInt(st.nextToken());
-        stairs = new HashMap<>();
-        snakes = new HashMap<>();
+        StringBuilder sb = new StringBuilder();
+        while(T --> 0) {
+            map = new HashMap<>();
+            String input = br.readLine();
+            K = Integer.parseInt(br.readLine());
 
-        int max = 101;
-        for(int i = 0; i < N; i++) {
-            StringTokenizer st1 = new StringTokenizer(br.readLine());
-            int start = Integer.parseInt(st1.nextToken());
-            int end = Integer.parseInt(st1.nextToken());
-            max = Math.max(max, Math.max(start, end));
-            stairs.put(start, end);
-        }
-
-        for(int i = 0; i < M; i++) {
-            StringTokenizer st1 = new StringTokenizer(br.readLine());
-            int start = Integer.parseInt(st1.nextToken());
-            int end = Integer.parseInt(st1.nextToken());
-            max = Math.max(max, Math.max(start, end));
-            snakes.put(start, end);
-        }
-
-        PriorityQueue<int[]> pq = new PriorityQueue<>((o1,o2) -> {
-            return o1[1] - o2[1];
-        });
-
-        pq.add(new int[]{1, 0});
-        int[] dist = new int[max];
-        Arrays.fill(dist, max + 1);
-        dist[1] = 0;
-
-        while(!pq.isEmpty()) {
-            int[] cur = pq.poll();
-            int pos = cur[0];
-            int count = cur[1];
-
-            if(pos == 100) {
-                System.out.println(count);
-                return;
+            for(int i =0 ; i < input.length(); i++) {
+                char c = input.charAt(i);
+                map.computeIfAbsent(c, k -> new ArrayList<>()).add(i);
             }
 
-            for(int i = 1; i <= 6; i++) {
-                int next = pos + i;
-                if(next > 100) break;
+            int min = Integer.MAX_VALUE;
+            int max = 0;
+            boolean flag = false;
+            for(char key : map.keySet()) {
+                List<Integer> list = map.get(key);
+                if(list.size() < K) continue;
+                flag = true;
+                int[] result = getResult(list);
+                min = Math.min(min, result[0]);
+                max = Math.max(max, result[1]);
+            }
 
-                while(stairs.containsKey(next)) {
-                    next = stairs.get(next);
-                }
-                while(snakes.containsKey(next)) {
-                    next = snakes.get(next);
-                }
-                if(dist[next] > count + 1) {
-                    dist[next] = count + 1;
-                    pq.add(new int[]{next, count + 1});
-                }
+            if(!flag) {
+                sb.append("-1").append("\n");
+            } else {
+                sb.append( min + " " + max).append("\n");
             }
         }
+        System.out.println(sb.toString().trim());
+    }
+
+    private static int[] getResult(List<Integer> list) {
+        int start = 0;
+        int end = start + K - 1;
+
+        int min = list.get(end) - list.get(start) + 1;
+        int max = list.get(end) - list.get(start) + 1;
+        while(true) {
+            min = Math.min(min, list.get(end) - list.get(start) + 1);
+            max = Math.max(max, list.get(end) - list.get(start) + 1);
+
+            end++;
+            start++;
+            if(end >= list.size()) break;
+        }
+        return new int[]{min, max};
     }
 }
