@@ -2,45 +2,48 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static Stack<int[]> stack;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        int N = Integer.parseInt(br.readLine());
-        stack = new Stack<>();
-
         StringTokenizer st = new StringTokenizer(br.readLine());
-        StringBuilder sb = new StringBuilder();
-        for(int i = 1; i <= N; i++) {
-            int value = Integer.parseInt(st.nextToken());
+        int N = Integer.parseInt(st.nextToken());
+        int M = Integer.parseInt(st.nextToken());
 
-            if(stack.isEmpty()) {
-                sb.append(0 + " ");
-                stack.push(new int[]{value, i});
-                continue;
-            }
+        StringTokenizer st1 = new StringTokenizer(br.readLine());
 
-            while(true) {
-                if(stack.isEmpty()) {
-                    sb.append(0 + " ");
-                    stack.push(new int[]{value, i});
-                    break;
-                }
-                int[] cur = stack.peek();
-                int pair = cur[0];
-                int pos = cur[1];
-                if(pair >= value) {
-                    sb.append(pos + " ");
-                    stack.push(new int[]{value, i});
-                    break;
-                }
-                stack.pop();
-            }
-
+        int[] graph = new int[M];
+        for(int i =0 ; i < graph.length; i++) {
+            graph[i] = Integer.parseInt(st1.nextToken());
         }
-        System.out.println(sb);
 
+        if(N <= 2) {
+            System.out.println(0);
+            return;
+        }
 
+        int count = 0;
+        for(int i = 1; i < graph.length - 1; i++) {
+            int[] info = getMax(i, graph);
+
+            int min = Math.min(info[0], info[1]);
+            if(min >= graph[i]) {
+                count += min - graph[i];
+            }
+        }
+
+        System.out.println(count);
+    }
+
+    private static int[] getMax(int pos, int[] graph) {
+        int left = 0;
+        int right = 0;
+        for(int i = 0; i < pos; i++) {
+            left = Math.max(graph[i], left);
+        }
+        for(int i = pos + 1; i < graph.length; i++) {
+            right = Math.max(graph[i], right);
+        }
+        return new int[]{left, right};
     }
 }
