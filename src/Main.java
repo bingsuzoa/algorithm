@@ -2,6 +2,8 @@ import java.util.*;
 import java.io.*;
 
 class Main {
+    static List<int[]>[] list;
+    static int MOD = Integer.MAX_VALUE;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -10,40 +12,48 @@ class Main {
         int N = Integer.parseInt(st.nextToken());
         int M = Integer.parseInt(st.nextToken());
 
-        StringTokenizer st1 = new StringTokenizer(br.readLine());
-
-        int[] graph = new int[M];
-        for(int i =0 ; i < graph.length; i++) {
-            graph[i] = Integer.parseInt(st1.nextToken());
+        list = new ArrayList[N+ 1];
+        for(int i = 0; i < list.length; i++) {
+            list[i] = new ArrayList<>();
         }
 
-        if(N <= 2) {
-            System.out.println(0);
-            return;
+        for(int i = 0; i < M; i++) {
+            StringTokenizer st1 = new StringTokenizer(br.readLine());
+            int s = Integer.parseInt(st1.nextToken());
+            int e = Integer.parseInt(st1.nextToken());
+            int w = Integer.parseInt(st1.nextToken());
+
+            list[s].add(new int[]{e, w});
+            list[e].add(new int[]{s, w});
         }
 
-        int count = 0;
-        for(int i = 1; i < graph.length - 1; i++) {
-            int[] info = getMax(i, graph);
+        PriorityQueue<int[]> queue = new PriorityQueue<>((o1,o2) -> {
+            return o1[1] - o2[1];
+        });
 
-            int min = Math.min(info[0], info[1]);
-            if(min >= graph[i]) {
-                count += min - graph[i];
+        int[] dist = new int[N + 1];
+        Arrays.fill(dist, MOD);
+        dist[1] = 0;
+
+        queue.add(new int[]{1, 0});
+        while(!queue.isEmpty()) {
+            int[] cur = queue.poll();
+            int pos = cur[0];
+            int count = cur[1];
+
+            if(pos == N) {
+                System.out.println(count);
+                return;
+            }
+
+            for(int[] next : list[pos]) {
+                int to = next[0];
+                int weight = next[1];
+                if(dist[to] > count + weight) {
+                    dist[to] = count + weight;
+                    queue.add(new int[]{to, dist[to]});
+                }
             }
         }
-
-        System.out.println(count);
-    }
-
-    private static int[] getMax(int pos, int[] graph) {
-        int left = 0;
-        int right = 0;
-        for(int i = 0; i < pos; i++) {
-            left = Math.max(graph[i], left);
-        }
-        for(int i = pos + 1; i < graph.length; i++) {
-            right = Math.max(graph[i], right);
-        }
-        return new int[]{left, right};
     }
 }
