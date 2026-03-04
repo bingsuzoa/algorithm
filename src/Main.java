@@ -2,40 +2,61 @@ import java.util.*;
 import java.io.*;
 
 class Main {
+    static Set<Integer> set;
+    static int[] graph;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        String input = br.readLine();
-        String goal = br.readLine();
+        int N = Integer.parseInt(br.readLine());
 
+        graph = new int[N + 1];
 
-        if(dfs(goal, input)) {
-            System.out.println(1);
-        } else {
-            System.out.println(0);
+        for(int i =1 ; i < graph.length; i++) {
+            graph[i] = Integer.parseInt(br.readLine());
         }
-    }
-    private static boolean dfs(String goal, String input) {
-        boolean match = false;
-        if(goal.length() == input.length()) {
-            if(goal.equals(input)) {
-                return true;
+
+        set = new HashSet<>();
+        boolean[] visited = new boolean[N+1];
+        for(int i = 1; i < graph.length; i++) {
+            Arrays.fill(visited, false);
+            if(graph[i] >= graph.length) continue;
+            visited[i] = true;
+            if(check(graph[i], i, visited)) {
+                isFill(i);
             }
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(set.size()).append("\n");
+        int[] answer = new int[set.size()];
+        int idx = 0;
+        for(int value : set) {
+            answer[idx++] = value;
+        }
+        Arrays.sort(answer);
+
+        for(int value : answer) {
+            sb.append(value).append("\n");
+        }
+
+        System.out.println(sb);
+    }
+    private static boolean check(int pos, int start, boolean[] visited) {
+        if(pos == start) {
+            return true;
+        }
+        if(visited[pos] || graph[pos] >= graph.length) {
             return false;
         }
-
-        char c = goal.charAt(goal.length() -1);
-        if(c == 'A') {
-            match |= dfs(goal.substring(0, goal.length() -1), input);
-        }
-        char c1 = goal.charAt(0);
-        if(c1 == 'B') {
-            StringBuilder sb = new StringBuilder();
-            sb.append(goal).reverse();
-            String next = sb.toString().substring(0, goal.length() -1);
-            match |= dfs(next, input);
-        }
-        return match;
+        visited[pos] = true;
+        return check(graph[pos], start, visited);
     }
+
+    private static void isFill(int pos) {
+        if(set.contains(pos)) return;
+
+        set.add(pos);
+        isFill(graph[pos]);
+    }
+
 }
