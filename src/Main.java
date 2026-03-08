@@ -2,97 +2,122 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static String[] nums = new String[10];
-    static int[][] graph;
-    static int answer = 0;
+    static StringBuilder sb = new StringBuilder();
+    static List<Integer> list = new ArrayList<>();
+    static List<Info> answer = new ArrayList<>();
+
+    static int[] buhos = new int[]{11, 12, 10};
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        StringTokenizer st = new StringTokenizer(br.readLine());
-        graph = new int[10][10];
+        int N = Integer.parseInt(br.readLine());
 
-        int N = Integer.parseInt(st.nextToken());
-        int K = Integer.parseInt(st.nextToken());
-        int P = Integer.parseInt(st.nextToken());
-        int X = Integer.parseInt(st.nextToken());
+        while(N --> 0) {
+            answer.clear();
+            int n = Integer.parseInt(br.readLine());
 
-        init();
+            int[] graph = new int[n + (n - 1)];
 
-        int[] goalArr = new int[K];
-        int[] nowArr = new int[K];
-
-        int nt = N;
-        int nx = X;
-        for(int i = goalArr.length - 1; i >= 0; i--) {
-            goalArr[i] = nt % 10;
-            nt /= 10;
-        }
-        for(int i = nowArr.length -1; i >= 0; i--) {
-            nowArr[i] = nx % 10;
-            nx /= 10;
-        }
-        dfs(0, P, goalArr, nowArr, new int[K], N, X);
-        System.out.println(answer);
-    }
-    private static void dfs(int idx, int P, int[] goal, int[] now, int[] temp, int N, int X) {
-        if(idx == goal.length) {
-            if(isPass(N, X, temp)) {
-                answer++;
+            int m = 1;
+            for(int i = 0; i < graph.length; i++) {
+                if(i % 2 == 0) {
+                    graph[i] = m ++;
+                }
             }
+
+            dfs(1, graph);
+            Collections.sort(answer);
+            isAnswer();
+            sb.append("\n");
+        }
+
+        System.out.println(sb);
+    }
+
+    private static void isAnswer() {
+        for(Info info : answer) {
+            int[] graph = info.graph;
+            for(int i = 0; i < graph.length; i++) {
+                int value = graph[i];
+                if(value == 10) {
+                    sb.append(' ');
+                }
+                else if(value == 11) {
+                    sb.append('+');
+                }
+                else if(value == 12) {
+                    sb.append('-');
+                } else {
+                    sb.append(value);
+                }
+            }
+            sb.append("\n");
+        }
+    }
+
+    private static void dfs(int cur, int[] graph) {
+        if(cur >= graph.length) {
+            isCheck(graph);
             return;
         }
-        int cur = now[idx];
-        for(int j = 0; j < graph[0].length; j++) {
-            if(P - graph[cur][j] < 0) continue;
-            temp[idx] = j;
-            dfs(idx + 1, P - graph[cur][j], goal, now, temp, N, X);
+
+        for(int i = 0; i < buhos.length; i++) {
+            graph[cur] = buhos[i];
+            dfs(cur + 2, graph);
         }
     }
 
-    private static boolean isPass(int N, int X, int[] now) {
-        int size = now.length - 1;
+    private static void isCheck(int[] graph) {
+        list.clear();
 
-        int nowNum = 0;
-
-        int idx = 0;
-        while(size >= 0) {
-            nowNum += (now[idx] * (int)Math.pow(10, size));
-            size--;
-            idx++;
-        }
-        if(nowNum == 0 || N < nowNum || X == nowNum) {
-            return false;
-        }
-        return true;
-    }
-
-    private static void init() {
-        nums[0] = "1110111";
-        nums[1] = "0010010";
-        nums[2] = "1011101";
-        nums[3] = "1011011";
-        nums[4] = "0111010";
-        nums[5] = "1101011";
-        nums[6] = "1101111";
-        nums[7] = "1010010";
-        nums[8] = "1111111";
-        nums[9] = "1111011";
-
-        for(int i =0 ; i < graph.length; i++) {
-            for(int j = 0; j < graph[i].length; j++) {
-                String start = nums[i];
-                String end = nums[j];
-
-                int count = 0;
-                for(int k = 0; k < start.length(); k++) {
-                    if(start.charAt(k) != end.charAt(k)) {
-                        count++;
-                    }
-                }
-                graph[i][j] = count;
-                graph[j][i] = count;
+        int num = 0;
+        for(int i = 0; i < graph.length; i++) {
+            int value = graph[i];
+            if(value >= 11) {
+                list.add(num);
+                list.add(value);
+                num = 0;
+            }
+            else if(value < 10) {
+                num *= 10;
+                num += value;
             }
         }
+        list.add(num);
+
+        int sum = list.get(0);
+        for(int i = 1; i < list.size() -1; i++) {
+            int left = list.get(i);
+            int right = list.get(i+1);
+            if(left == 11) {
+                sum += right;
+            } else if(left == 12) {
+                sum -= right;
+            }
+            i = i + 1;
+        }
+
+        if(sum == 0) {
+            answer.add(new Info(Arrays.copyOf(graph, graph.length)));
+        }
+    }
+}
+
+class Info implements Comparable<Info> {
+    int[] graph;
+
+    public Info(int[] graph) {
+        this.graph = graph;
+    }
+
+    @Override
+    public int compareTo(Info o) {
+        for(int i = 0; i < graph.length; i++) {
+            if(i % 2 == 0) continue;
+            if(this.graph[i] == o.graph[i]) continue;
+            return this.graph[i] - o.graph[i];
+        }
+        return 0;
     }
 }
