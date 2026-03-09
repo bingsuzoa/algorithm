@@ -2,122 +2,113 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static StringBuilder sb = new StringBuilder();
-    static List<Integer> list = new ArrayList<>();
-    static List<Info> answer = new ArrayList<>();
-
-    static int[] buhos = new int[]{11, 12, 10};
+    static int[][] graph;
+    static boolean[][] visited;
+    static int[][] flaged;
+    static Queue<int[]> queue;
+    static int[] dx = {1,-1,0,0};
+    static int[] dy = {0,0,1,-1};
+    static int N,L,H;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        int N = Integer.parseInt(br.readLine());
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        N = Integer.parseInt(st.nextToken());
+        L = Integer.parseInt(st.nextToken());
+        H = Integer.parseInt(st.nextToken());
 
-        while(N --> 0) {
-            answer.clear();
-            int n = Integer.parseInt(br.readLine());
+        graph = new int[N][N];
+        visited = new boolean[N][N];
+        flaged = new int[N][N];
+        queue = new LinkedList<>();
 
-            int[] graph = new int[n + (n - 1)];
+        for(int i= 0; i < graph.length; i++) {
+            StringTokenizer st1 = new StringTokenizer(br.readLine());
+            for(int j =0 ; j < graph[i].length; j++) {
+                graph[i][j] = Integer.parseInt(st1.nextToken());
+            }
+        }
 
-            int m = 1;
+        int answer = 0;
+        int num = 1000;
+        while(true) {
+            boolean isPossible = false;
+            answer++;
+
+            for(int i =0 ; i < visited.length; i++) {
+                Arrays.fill(visited[i], false);
+            }
+
             for(int i = 0; i < graph.length; i++) {
-                if(i % 2 == 0) {
-                    graph[i] = m ++;
+                for(int j = 0; j < graph[i].length; j++) {
+                    if(visited[i][j]) continue;
+                    visited[i][j] = true;
+                    flaged[i][j] = num;
+                    if(bfs(i,j,num)) {
+                        isPossible = true;
+                    }
+                    num++;
                 }
             }
-
-            dfs(1, graph);
-            Collections.sort(answer);
-            isAnswer();
-            sb.append("\n");
+            if(!isPossible) {
+                answer -= 1;
+                break;
+            }
         }
-
-        System.out.println(sb);
+        System.out.println(answer);
     }
 
-    private static void isAnswer() {
-        for(Info info : answer) {
-            int[] graph = info.graph;
-            for(int i = 0; i < graph.length; i++) {
-                int value = graph[i];
-                if(value == 10) {
-                    sb.append(' ');
+    private static boolean bfs(int sx, int sy, int snum) {
+        queue.clear();
+
+        queue.add(new int[]{sx, sy});
+
+        while(!queue.isEmpty()) {
+            int[] cur = queue.poll();
+            int x = cur[0];
+            int y = cur[1];
+
+            for(int i =0 ; i < 4; i++) {
+                int nx = x + dx[i];
+                int ny = y + dy[i];
+
+                if(nx >= graph.length || nx < 0 || ny >= graph[0].length || ny < 0) {
+                    continue;
                 }
-                else if(value == 11) {
-                    sb.append('+');
+                if(visited[nx][ny]) continue;
+
+                int diff = Math.abs(graph[x][y] - graph[nx][ny]);
+                if(diff < L || diff > H) {
+                    continue;
                 }
-                else if(value == 12) {
-                    sb.append('-');
-                } else {
-                    sb.append(value);
+                visited[nx][ny] = true;
+                flaged[nx][ny] = snum;
+                queue.add(new int[]{nx, ny});
+            }
+        }
+
+        int totalSum = 0;
+        int totalCount = 0;
+        for(int i = 0; i < flaged.length; i++) {
+            for(int j =0 ; j  < flaged[0].length; j++) {
+                if(flaged[i][j] == snum) {
+                    totalCount++;
+                    totalSum += graph[i][j];
                 }
             }
-            sb.append("\n");
         }
-    }
-
-    private static void dfs(int cur, int[] graph) {
-        if(cur >= graph.length) {
-            isCheck(graph);
-            return;
+        if(totalCount <= 1) {
+            return false;
         }
-
-        for(int i = 0; i < buhos.length; i++) {
-            graph[cur] = buhos[i];
-            dfs(cur + 2, graph);
-        }
-    }
-
-    private static void isCheck(int[] graph) {
-        list.clear();
-
-        int num = 0;
-        for(int i = 0; i < graph.length; i++) {
-            int value = graph[i];
-            if(value >= 11) {
-                list.add(num);
-                list.add(value);
-                num = 0;
-            }
-            else if(value < 10) {
-                num *= 10;
-                num += value;
+        int nextSum = totalSum / totalCount;
+        for(int i = 0; i < flaged.length; i++) {
+            for(int j =0 ; j < flaged[0].length; j++) {
+                if(flaged[i][j] == snum) {
+                    graph[i][j] = nextSum;
+                }
             }
         }
-        list.add(num);
-
-        int sum = list.get(0);
-        for(int i = 1; i < list.size() -1; i++) {
-            int left = list.get(i);
-            int right = list.get(i+1);
-            if(left == 11) {
-                sum += right;
-            } else if(left == 12) {
-                sum -= right;
-            }
-            i = i + 1;
-        }
-
-        if(sum == 0) {
-            answer.add(new Info(Arrays.copyOf(graph, graph.length)));
-        }
-    }
-}
-
-class Info implements Comparable<Info> {
-    int[] graph;
-
-    public Info(int[] graph) {
-        this.graph = graph;
-    }
-
-    @Override
-    public int compareTo(Info o) {
-        for(int i = 0; i < graph.length; i++) {
-            if(i % 2 == 0) continue;
-            if(this.graph[i] == o.graph[i]) continue;
-            return this.graph[i] - o.graph[i];
-        }
-        return 0;
+        return true;
     }
 }
