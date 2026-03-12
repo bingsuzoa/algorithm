@@ -2,33 +2,30 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static int[] dp;
-    static int N;
-
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException{
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        N = Integer.parseInt(br.readLine());
-        dp = new int[N+1];
-        Arrays.fill(dp, Integer.MAX_VALUE);
+        int N = Integer.parseInt(br.readLine());
 
-        System.out.println(dfs(N));
-    }
+        int[] dp = new int[12];
+        dp[1] = 1;
 
-    private static int dfs(int N) {
-        if(dp[N] != Integer.MAX_VALUE) {
-            return dp[N];
+        StringBuilder sb = new StringBuilder();
+
+        for(int i = 2; i < dp.length; i++) {
+            for(int j = 1; j <= 3; j++) {
+                if(i - j >= 1) {
+                    dp[i] += dp[i-j];
+                }
+            }
+            if(i <= 3) {
+                dp[i]++;
+            }
         }
-        if(N == 1) {
-            return 0;
+        while(N --> 0) {
+            int n = Integer.parseInt(br.readLine());
+            sb.append(dp[n]).append("\n");
         }
-        if(N % 3 == 0) {
-            dp[N] = Math.min(dp[N], dfs(N/3) + 1);
-        }
-        if(N % 2 == 0) {
-            dp[N] = Math.min(dp[N], dfs(N/2) + 1);
-        }
-        dp[N] = Math.min(dp[N], dfs(N-1) + 1);
-        return dp[N];
+        System.out.println(sb);
     }
 }
