@@ -2,34 +2,51 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static int N;
-    static int[] dp;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        N = Integer.parseInt(br.readLine());
-        dp = new int[N + 1];
+        int N = Integer.parseInt(br.readLine());
 
-        if(N == 1) {
-            dp[1] = 1;
-            System.out.println(1);
-            return;
-        }
-        if(N == 2) {
-            dp[1] = 1;
-            dp[2] = 2;
-            System.out.println(2);
-            return;
-        }
+        long[] graph = new long[N];
+        StringTokenizer st = new StringTokenizer(br.readLine());
 
-        dp[1] = 1;
-        dp[2] = 2;
-        for(int i = 3; i < dp.length; i++) {
-            dp[i] = (dp[i-1] + dp[i-2]) % 10007;
+        for(int i = 0; i < graph.length; i++) {
+            graph[i] = Long.parseLong(st.nextToken());
         }
+        Arrays.sort(graph);
+        int count = 0;
+        for(int i = 0; i < graph.length; i++) {
+            long target = graph[i];
 
-        System.out.println(dp[N] % 10007);
+            int left = 0;
+            int right = graph.length - 1;
+
+            while(left < right) {
+                if(left == i) {
+                    left++;
+                    continue;
+                }
+                if(right == i) {
+                    right--;
+                    continue;
+                }
+
+                long sum = graph[left] + graph[right];
+
+                if(sum == target) {
+                    count++;
+                    break;
+                }
+                if(sum < target) {
+                    left++;
+                }
+                else {
+                    right--;
+                }
+            }
+
+        }
+        System.out.println(count);
     }
-
 }
