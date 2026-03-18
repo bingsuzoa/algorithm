@@ -2,51 +2,38 @@ import java.util.*;
 import java.io.*;
 
 class Main {
+    static int N,M;
+    static int[] graph;
+    static int[] prefix;
+    static StringBuilder sb = new StringBuilder();
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        int N = Integer.parseInt(br.readLine());
+        StringTokenizer input = new StringTokenizer(br.readLine());
+        N = Integer.parseInt(input.nextToken());
+        M = Integer.parseInt(input.nextToken());
 
-        long[] graph = new long[N];
+        graph = new int[N + 1];
+        prefix = new int[N+1];
         StringTokenizer st = new StringTokenizer(br.readLine());
 
-        for(int i = 0; i < graph.length; i++) {
-            graph[i] = Long.parseLong(st.nextToken());
+        for(int i = 1;i < graph.length; i++) {
+            graph[i] = Integer.parseInt(st.nextToken());
         }
-        Arrays.sort(graph);
-        int count = 0;
-        for(int i = 0; i < graph.length; i++) {
-            long target = graph[i];
 
-            int left = 0;
-            int right = graph.length - 1;
-
-            while(left < right) {
-                if(left == i) {
-                    left++;
-                    continue;
-                }
-                if(right == i) {
-                    right--;
-                    continue;
-                }
-
-                long sum = graph[left] + graph[right];
-
-                if(sum == target) {
-                    count++;
-                    break;
-                }
-                if(sum < target) {
-                    left++;
-                }
-                else {
-                    right--;
-                }
-            }
-
+        prefix[1] = graph[1];
+        for(int i = 2; i < prefix.length; i++) {
+            prefix[i] = prefix[i-1] + graph[i];
         }
-        System.out.println(count);
+
+        while(M --> 0) {
+            StringTokenizer st1 = new StringTokenizer(br.readLine());
+            int n = Integer.parseInt(st1.nextToken());
+            int m = Integer.parseInt(st1.nextToken());
+
+            sb.append(prefix[m] - prefix[n-1]).append("\n");
+        }
+        System.out.println(sb);
     }
 }
