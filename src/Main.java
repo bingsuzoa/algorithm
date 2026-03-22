@@ -3,7 +3,7 @@ import java.io.*;
 
 class Main {
     static int N;
-    static int[] counts;
+    static int[] dist;
     static int[] memori;
     static int MOD = Integer.MAX_VALUE;
 
@@ -11,13 +11,37 @@ class Main {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         N = Integer.parseInt(br.readLine());
-        counts = new int[N+1];
-        Arrays.fill(counts, MOD);
-        memori = new int[N+1];
-        memori[N] = N;
-        counts[N] = 0;
 
-        dfs(N, N, 0);
+        dist = new int[N+1];
+        memori = new int[N+1];
+        Arrays.fill(dist, MOD);
+
+        Queue<int[]> queue = new LinkedList<>();
+        memori[N] = N;
+        dist[N] = 0;
+        queue.add(new int[]{N, 0});
+
+        while(!queue.isEmpty()) {
+            int[] tmp = queue.poll();
+            int cur = tmp[0];
+            int count = tmp[1];
+
+            if(cur == 1) break;
+
+            int[] next = new int[3];
+            next[0] = cur % 3 == 0 ? cur / 3  : 0;
+            next[1] = cur % 2 == 0 ? cur / 2 : 0;
+            next[2] = cur - 1;
+
+            for(int i =0 ; i < next.length; i++) {
+                if(next[i] == 0) continue;
+                if(dist[next[i]] == MOD) {
+                    dist[next[i]] = count + 1;
+                    memori[next[i]] = cur;
+                    queue.add(new int[]{next[i], count + 1});
+                }
+            }
+        }
 
         Stack<Integer> stack = new Stack<>();
         int idx = 1;
@@ -28,34 +52,10 @@ class Main {
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append(stack.size() - 1).append("\n");
+        sb.append(stack.size() -1).append("\n");
         while(!stack.isEmpty()) {
             sb.append(stack.pop()).append(" ");
         }
         System.out.println(sb);
-
-    }
-    private static void dfs(int cur, int befo, int count) {
-        if(cur == 1) return;
-
-        if(cur % 3 == 0) {
-            if(counts[cur/3] > count + 1) {
-                counts[cur/3] = count + 1;
-                memori[cur/3] = cur;
-                dfs(cur/3, cur, count + 1);
-            }
-        }
-        if(cur % 2 == 0) {
-            if(counts[cur/2] > count + 1) {
-                counts[cur/2] = count + 1;
-                memori[cur/2] = cur;
-                dfs(cur/2, cur, count + 1);
-            }
-        }
-        if(counts[cur -1] > count + 1) {
-            counts[cur-1] = count + 1;
-            memori[cur-1] = cur;
-            dfs(cur -1, cur, count + 1);
-        }
     }
 }
