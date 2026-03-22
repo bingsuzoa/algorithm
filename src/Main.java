@@ -2,46 +2,60 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static int[][] graph;
-    static int[] dx = {1, -1, 0, 0};
-    static int[] dy = {0,0, 1, -1};
-    static int max = 0;
+    static int N;
+    static int[] counts;
+    static int[] memori;
+    static int MOD = Integer.MAX_VALUE;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        StringTokenizer st = new StringTokenizer(br.readLine());
-        int N = Integer.parseInt(st.nextToken());
-        int M = Integer.parseInt(st.nextToken());
-        graph = new int[N][M];
+        N = Integer.parseInt(br.readLine());
+        counts = new int[N+1];
+        Arrays.fill(counts, MOD);
+        memori = new int[N+1];
+        memori[N] = N;
+        counts[N] = 0;
 
-        for(int i = 0; i < graph.length; i++) {
-            String input = br.readLine();
-            for(int j = 0; j < graph[i].length; j++) {
-                graph[i][j] = input.charAt(j) - 'A';
-            }
+        dfs(N, N, 0);
+
+        Stack<Integer> stack = new Stack<>();
+        int idx = 1;
+        stack.push(idx);
+        while(idx < N) {
+            stack.push(memori[idx]);
+            idx = memori[idx];
         }
 
-        int startbit = 1 << graph[0][0];
-        dfs(startbit, 0, 0, 1);
-        System.out.println(max);
-
-    }
-
-    private static void dfs(int bit, int sx, int sy, int count) {
-        for(int i = 0; i < 4; i++) {
-            int nx = sx + dx[i];
-            int ny = sy + dy[i];
-            if(nx >= graph.length || nx < 0 || ny >= graph[0].length || ny < 0) continue;
-
-            int next = 1 << graph[nx][ny];
-            if((bit & next) != 0) {
-                continue;
-            }
-            dfs(bit | next, nx, ny, count + 1);
+        StringBuilder sb = new StringBuilder();
+        sb.append(stack.size() - 1).append("\n");
+        while(!stack.isEmpty()) {
+            sb.append(stack.pop()).append(" ");
         }
+        System.out.println(sb);
 
-        max = Math.max(max, count);
     }
+    private static void dfs(int cur, int befo, int count) {
+        if(cur == 1) return;
 
+        if(cur % 3 == 0) {
+            if(counts[cur/3] > count + 1) {
+                counts[cur/3] = count + 1;
+                memori[cur/3] = cur;
+                dfs(cur/3, cur, count + 1);
+            }
+        }
+        if(cur % 2 == 0) {
+            if(counts[cur/2] > count + 1) {
+                counts[cur/2] = count + 1;
+                memori[cur/2] = cur;
+                dfs(cur/2, cur, count + 1);
+            }
+        }
+        if(counts[cur -1] > count + 1) {
+            counts[cur-1] = count + 1;
+            memori[cur-1] = cur;
+            dfs(cur -1, cur, count + 1);
+        }
+    }
 }
