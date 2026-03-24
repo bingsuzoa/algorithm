@@ -2,58 +2,35 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static Stack<Character> stack;
-    static String goal;
-    static StringBuilder bomb;
+    static int N;
+    static int[] graph;
+    static boolean[] checked;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        String input = br.readLine();
-        goal = br.readLine();
-        char last = goal.charAt(goal.length() -1);
+        N = Integer.parseInt(br.readLine());
+        graph = new int[N];
+        checked = new boolean[N+1];
 
-        stack = new Stack<>();
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        for(int i =0; i < N; i++) {
+            graph[i] = Integer.parseInt(st.nextToken());
+        }
 
-        bomb = new StringBuilder();
-        for(char c : input.toCharArray()) {
-            if(c == last) {
-                stack.push(c);
-                check();
-            } else {
-                stack.push(c);
+        int start = 0;
+        int end = 0;
+        int count = 0;
+        while(start < graph.length) {
+            while(end < graph.length && !checked[graph[end]]) {
+                checked[graph[end]] = true;
+                end++;
             }
-        }
 
-        if(stack.isEmpty()) {
-            System.out.println("FRULA");
-        } else {
-            StringBuilder sb = new StringBuilder();
-            while(!stack.isEmpty()) {
-                sb.append(stack.pop());
-            }
-            System.out.println(sb.reverse());
+            count += (end - start);
+            checked[graph[start]] = false;
+            start++;
         }
-    }
-
-    private static void check() {
-        bomb.setLength(0);
-
-        if(stack.size() < goal.length()) {
-            return;
-        }
-
-        boolean isMatch = true;
-        for(int i = 0; i < goal.length(); i++) {
-            if(stack.get(stack.size() - goal.length() + i) != goal.charAt(i)) {
-                isMatch = false;
-                break;
-            }
-        }
-        if(isMatch) {
-            for(int i = 0; i < goal.length(); i++) {
-                stack.pop();
-            }
-        }
+        System.out.println(count);
     }
 }
