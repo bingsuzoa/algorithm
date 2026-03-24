@@ -2,53 +2,58 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static int N, C;
-    static long[] graph;
+    static Stack<Character> stack;
+    static String goal;
+    static StringBuilder bomb;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        StringTokenizer st = new StringTokenizer(br.readLine());
-        N = Integer.parseInt(st.nextToken());
-        C = Integer.parseInt(st.nextToken());
+        String input = br.readLine();
+        goal = br.readLine();
+        char last = goal.charAt(goal.length() -1);
 
-        graph = new long[N];
-        for(int i = 0; i < graph.length; i++) {
-            graph[i] = Long.parseLong(br.readLine());
-        }
-        Arrays.sort(graph);
+        stack = new Stack<>();
 
-        long right = graph[graph.length - 1];
-        long left = 1;
-
-        while(left <= right) {
-            long min = (left + right) / 2;
-
-            if(isPossible(min)) {
-                left = min + 1;
+        bomb = new StringBuilder();
+        for(char c : input.toCharArray()) {
+            if(c == last) {
+                stack.push(c);
+                check();
             } else {
-                right = min - 1;
+                stack.push(c);
             }
         }
-        System.out.println(right);
 
+        if(stack.isEmpty()) {
+            System.out.println("FRULA");
+        } else {
+            StringBuilder sb = new StringBuilder();
+            while(!stack.isEmpty()) {
+                sb.append(stack.pop());
+            }
+            System.out.println(sb.reverse());
+        }
     }
 
-    private static boolean isPossible(long min) {
-        int count = 1;
-        long sum = 0;
+    private static void check() {
+        bomb.setLength(0);
 
-        for(int i = 1; i < graph.length; i++) {
-            sum += (graph[i] - graph[i-1]);
-            if(sum >= min) {
-                sum = 0;
-                count ++;
-                if(count == C) return true;
+        if(stack.size() < goal.length()) {
+            return;
+        }
+
+        boolean isMatch = true;
+        for(int i = 0; i < goal.length(); i++) {
+            if(stack.get(stack.size() - goal.length() + i) != goal.charAt(i)) {
+                isMatch = false;
+                break;
             }
         }
-        if(count == C) {
-            return true;
+        if(isMatch) {
+            for(int i = 0; i < goal.length(); i++) {
+                stack.pop();
+            }
         }
-        return false;
     }
 }
