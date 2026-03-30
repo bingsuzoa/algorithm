@@ -2,93 +2,86 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static int R, C;
-    static char[][] graph;
-    static int[][] fires;
-    static int[][] jihoons;
-
-    static int[] dx = {1,-1,0,0};
-    static int[] dy = {0,0,1,-1};
+    static int N, M, X;
+    static List<int[]>[] list;
+    static int[] graph;
+    static int[] result;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         StringTokenizer st = new StringTokenizer(br.readLine());
-        R = Integer.parseInt(st.nextToken());
-        C = Integer.parseInt(st.nextToken());
 
-        graph = new char[R][C];
-        fires = new int[R][C];
-        jihoons = new int[R][C];
+        N = Integer.parseInt(st.nextToken());
+        M = Integer.parseInt(st.nextToken());
+        X = Integer.parseInt(st.nextToken());
 
-        for(int i = 0; i < graph.length; i++) {
-            Arrays.fill(fires[i], Integer.MAX_VALUE);
-            Arrays.fill(jihoons[i], Integer.MAX_VALUE);
+        list = new ArrayList[N+1];
+        graph = new int[N+1];
+        result = new int[N+1];
+        Arrays.fill(graph, Integer.MAX_VALUE);
+        Arrays.fill(result, Integer.MAX_VALUE);
+
+        for(int i =0 ; i < list.length; i++) {
+            list[i] = new ArrayList<>();
         }
 
-        Queue<int[]> fireQueue = new LinkedList<>();
-        Queue<int[]> jihoonQueue = new LinkedList<>();
-
-        for(int i = 0; i < graph.length; i++) {
-            String input = br.readLine();
-            for(int j = 0; j < graph[i].length; j++) {
-                char c = input.charAt(j);
-                graph[i][j] = c;
-
-                if(c == 'F') {
-                    fires[i][j] = 0;
-                    fireQueue.add(new int[]{i,j, 0});
-                }
-                if(c == 'J') {
-                    jihoons[i][j] = 0;
-                    jihoonQueue.add(new int[]{i,j, 0});
-                }
-            }
+        for(int i = 0; i < M; i++) {
+            String[] arr = br.readLine().split(" ");
+            int x = Integer.parseInt(arr[0]);
+            int y = Integer.parseInt(arr[1]);
+            int z = Integer.parseInt(arr[2]);
+            list[x].add(new int[]{y, z});
         }
 
-        while(!fireQueue.isEmpty()) {
-            int[] cur = fireQueue.poll();
-            int x = cur[0];
-            int y = cur[1];
-            int count = cur[2];
+        PriorityQueue<int[]> pq = new PriorityQueue<>((o1,o2) -> {
+            return o1[1] - o2[1];
+        });
 
-            for(int i =0 ; i < 4; i++) {
-                int nx = x + dx[i];
-                int ny = y + dy[i];
 
-                if(nx >= graph.length || nx < 0 || ny >= graph[0].length || ny < 0) continue;
+        for(int start = 1; start <= N; start++) {
+            boolean goBack = false;
+            pq.clear();
+            Arrays.fill(graph, Integer.MAX_VALUE);
+            pq.add(new int[]{start, 0});
+            graph[start] = 0;
 
-                if(graph[nx][ny] != '#') {
-                    if(fires[nx][ny] > count + 1) {
-                        fires[nx][ny] = count + 1;
-                        fireQueue.add(new int[]{nx, ny, count + 1});
+            while(!pq.isEmpty()) {
+                int[] cur = pq.poll();
+                int from = cur[0];
+                int cost = cur[1];
+
+                if(!goBack && from == X) {
+                    result[start] = Math.min(result[start], cost);
+
+                    goBack = true;
+                    pq.clear();
+                    Arrays.fill(graph, Integer.MAX_VALUE);
+                    graph[X] = 0;
+                    pq.add(new int[]{X, 0});
+                    continue;
+                }
+
+                if(goBack && from == start) {
+                    result[start] += cost;
+                    break;
+                }
+
+                for(int[] next : list[from]) {
+                    int to = next[0];
+                    int toCost = next[1];
+                    if(graph[to] > cost + toCost) {
+                        graph[to] = cost + toCost;
+                        pq.add(new int[]{to, graph[to]});
                     }
                 }
             }
         }
 
-        while(!jihoonQueue.isEmpty()) {
-            int[] cur = jihoonQueue.poll();
-            int x = cur[0];
-            int y = cur[1];
-            int count = cur[2];
-
-            for(int i =0; i < 4; i++) {
-                int nx = x + dx[i];
-                int ny = y + dy[i];
-
-                if(nx >= graph.length || nx < 0 || ny >= graph[0].length || ny < 0) {
-                    System.out.println(count +1);
-                    return;
-                }
-                if(graph[nx][ny] != '#') {
-                    if(fires[nx][ny] > count + 1 && jihoons[nx][ny] > count + 1) {
-                        jihoons[nx][ny] = count + 1;
-                        jihoonQueue.add(new int[]{nx, ny, count + 1});
-                    }
-                }
-            }
+        int max = 0;
+        for(int i = 1; i < result.length; i++) {
+            max = Math.max(max, result[i]);
         }
-        System.out.println("IMPOSSIBLE");
+        System.out.println(max);
     }
 }
