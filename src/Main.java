@@ -1,4 +1,3 @@
-import java.util.*;
 import java.io.*;
 
 class Main {
@@ -8,24 +7,30 @@ class Main {
     }
 
     private static int solution(int S, int T, int X, int Y) {
-        int[][] dp = new int[1002][1002];
-        for(int i =0 ; i < dp.length; i++) {
-            Arrays.fill(dp[i], Integer.MAX_VALUE);
+
+        int min = Integer.MAX_VALUE;
+
+        for(int attack = X; attack <= 1000; attack++) {
+            int cost = attack - X;
+
+            int needAttack = (T + attack -1) / attack;
+
+            int required = Y * (needAttack - 1) + 1;
+
+            int needCost = S >= required ? 0 : required - S;
+            min = Math.min(min, cost + needCost);
         }
-        return dfs(dp, S, T, X, Y);
+        return min;
     }
 
-    private static int dfs(int[][] dp, int bs, int T, int bx, int Y) {
-        if(dp[bs][bx] != Integer.MAX_VALUE) {
-            return dp[bs][bx];
-        }
-        if(step2(bs, T, bx, Y)) {
-            return 0;
-        }
-        dp[bs][bx] = Math.min(dp[bs][bx], dfs(dp, bs + 1, T, bx, Y) + 1);
-        dp[bs][bx] = Math.min(dp[bs][bx], dfs(dp, bs , T, bx + 1, Y) + 1);
-        return dp[bs][bx];
+    private static int needAttack(int S, int T, int X, int Y) {
+        int monster = T % X == 0 ? T / X : T / X + 1;
+
+        int need = Y * monster;
+        if(S >= need) return 0;
+        return need - S;
     }
+
 
     private static boolean step2(int S, int T, int X, int Y) {
         int minseo = S % Y == 0 ? S / Y : S / Y + 1;
