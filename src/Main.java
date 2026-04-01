@@ -9,68 +9,61 @@ class Main {
     }
 
     private static int[] solution(int V, int E, int A, int B, int[] x, int[] y) {
-        int[] answer = new int[2];
         List<int[]>[] list = init(V, E, A, B, x, y);
-
+        int[] answer = new int[2];
         int[][] graph = new int[V + 1][2];
-        for(int i = 0; i < graph.length; i++) {
+        for(int i =0 ; i < graph.length; i++) {
             Arrays.fill(graph[i], Integer.MAX_VALUE);
         }
 
-        PriorityQueue<int[]> pq = new PriorityQueue<>((o1,o2) -> {
+        PriorityQueue<int[]> pq = new PriorityQueue<>((o1, o2) -> {
             if(o1[1] == o2[1]) {
                 return o1[2] - o2[2];
             }
             return o1[1] - o2[1];
         });
 
-        pq.add(new int[]{A, 0, 0, 0, 0});
         graph[A][0] = 0;
         graph[A][1] = 0;
-
+        pq.add(new int[]{A, 0, 0});
         while(!pq.isEmpty()) {
             int[] cur = pq.poll();
             int from = cur[0];
-            int cost = cur[1];
-            int totalCount = cur[2];
-            int upCount = cur[3];
-            int downCount =cur[4];
+            int up = cur[1];
+            int total = cur[2];
 
-            if(cost > graph[from][0]) continue;
-            if(cost == graph[from][0] && totalCount > graph[from][1]) continue;
-
+            if(graph[from][0] < up) continue;
+            if(graph[from][0] == up && graph[from][1] < total) continue;
             if(from == B) {
-                answer[0] = upCount;
-                answer[1] = downCount;
+                answer[0] = up;
+                answer[1] = total - up;
                 break;
             }
 
             for(int[] next : list[from]) {
                 int to = next[0];
                 int toCost = next[1];
-
-                if(graph[to][0] > cost + toCost || (graph[to][0] == cost + toCost && graph[to][1] > totalCount + 1)) {
-                    graph[to][0] = cost + toCost;
-                    graph[to][1] = totalCount + 1;
-                    if(toCost == 1) {
-                        pq.add(new int[]{to, graph[to][0], graph[to][1], upCount + 1, downCount});
-                    } else {
-                        pq.add(new int[]{to, graph[to][0], graph[to][1], upCount, downCount + 1});
-                    }
+                if(graph[to][0] > up + toCost) {
+                    graph[to][0] = up + toCost;
+                    graph[to][1] = total + 1;
+                    pq.add(new int[]{to, graph[to][0], graph[to][1]});
+                }
+                else if(graph[to][0] == up + toCost && graph[to][1] > total + 1) {
+                    graph[to][1] = total + 1;
+                    pq.add(new int[]{to, graph[to][0], graph[to][1]});
                 }
             }
         }
         return answer;
     }
 
-    private static List<int[]>[] init(int V, int E, int A, int B, int[] x, int[] y) {
+    private static List<int[]> [] init(int V, int E, int A, int B, int[] x, int[] y) {
         List<int[]>[] list = new ArrayList[V + 1];
-
-        for(int i =0 ; i < list.length; i++) {
+        for(int i =0; i < list.length; i++) {
             list[i] = new ArrayList<>();
         }
 
-        for(int i = 0; i < x.length; i++) {
+        for(int i =0 ; i < x.length; i++) {
             int start = x[i];
             int end = y[i];
             list[start].add(new int[]{end, 1});
