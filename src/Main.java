@@ -2,78 +2,82 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static int N, M;
-    static Map<Integer, String> map;
-    static int[] graph;
-    static int[] sorted;
+    static int[][] graph;
+    static int[][][] dp;
+    static int[] dx = {1,-1,0,0};
+    static int[] dy = {0,0,1,-1};
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        StringTokenizer st = new StringTokenzier(br.readLine());
-        N = Integer.parseInt(st.nextToken());
-        M = Integer.parseInt(st.nextToken());
+        StringTokenizer st = new StringTokenizer(br.readLine());
 
-        Info[] infos = new Inf[N];
-        map = new HashMap<>();
+        int N = Integer.parseInt(st.nextToken());
+        int M = Integer.parseInt(st.nextToken());
 
-        for(int i =0 ; i < infos.length; i++) {
-            StringTokenizer st1 = new StringTokenizer(br.readLine());
-            String s = st1.nextToken();
-            int v = Integer.parseInt(st1.nextToken());
-            infos[i] = new Info(s, v);
+        graph = new int[N][M];
+        dp = new int[N][M][2];
+        for(int i = 0; i < dp.length; i++) {
+            for(int j =0 ; j < dp[i].length; j++) {
+                Arrays.fill(dp[i][j], Integer.MAX_VALUE);
+            }
         }
 
-        graph = new int[M];
-        sorted = new int[M];
         for(int i = 0; i < graph.length; i++) {
-            graph[i] = Integer.parseInt(br.readLine());
-            sorted[i] = graph[i];
+            String input = br.readLine();
+            for(int j =0; j < input.length(); j++) {
+                graph[i][j] = input.charAt(j) - '0';
+            }
         }
 
-        Arrays.sort(sorted);
+        PriorityQueue<int[]> pq = new PriorityQueue<>((o1,o2) -> {
+            return o1[2] - o2[2];
+        });
 
-        int start = 0;
-        for(Info info : infos) {
-            if(start < sorted.length) {
-                int end = binary(info, start);
-                for(int i = start; i <= end; i++) {
-                    map.putIfAbsent(sorted[i], info.info);
+        pq.add(new int[]{0, 0, 0, 0});
+
+        //0 - 벽안부수고 이동, 1 벽부수고 이동했을 때 최소 이동횟수
+        dp[0][0][0] = 1;
+
+        int max = Integer.MAX_VALUE;
+        while(!pq.isEmpty()) {
+            int[] cur = pq.poll();
+            int x = cur[0];
+            int y = cur[1];
+            int count = cur[2];
+            int busuda = cur[3];
+
+            if(dp[x][y][busuda] <= count) continue;
+            if(x == N-1 && y == M-1) {
+                max = Math.min(dp[N-1][M-1][0], max);
+                max = Math.min(dp[N-1][M-1][1], max);
+                break;
+            }
+
+            for(int i = 0; i< 4; i++) {
+                int nx = x + dx[i];
+                int ny = y + dy[i];
+
+                if(nx < 0 || nx >= graph.length || ny < 0 ||ny >= graph[0].length) continue;
+
+                if(graph[nx][ny] == 0 && dp[nx][ny][busuda] > count + 1) {
+                    dp[nx][ny][busuda] = count + 1;
+                    pq.add(new int[]{nx, ny, count + 1, busuda});
+                } else {
+                    if(busuda == 1) continue;
+                    if(dp[nx][ny][1] > count + 1) {
+                        dp[nx][ny][1] = count + 1;
+                        pq.add(new int[]{nx, ny, count + 1, 1});
+                    }
                 }
-                start = end + 1;
+
             }
         }
-        StringBuilder sb = new StringBuilder();
-        for(int i = 0; i < graph.length; i++) {
-            sb.append(map.get(graph[i])).append("\n");
+        if(max == Integer.MAX_VALUE) {
+            System.out.println(-1);
+        } else {
+            System.out.println(max);
         }
-        System.out.println(sb);
     }
 
-    private static int binary(Info info, int start) {
-        String info = info.info;
-        int goal = info.value;
-
-        int end = sorted.length - 1;
-        while(start <= end) {
-            int mid = (start + end) / 2;
-
-            if(sorted[mid] <= goal) {
-                start = mid + 1;
-            } else {
-                end = mid - 1;
-            }
-        }
-        return end;
-    }
-}
-
-class Info {
-    String info;
-    int value;
-
-    Info(String info, int value) {
-        this.info = info;
-        this.value = value;
-    }
 }
