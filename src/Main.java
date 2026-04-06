@@ -2,71 +2,66 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static int[][] graph;
-    static int[][][] visited;
-    static int[] dx = {1,-1,0,0};
-    static int[] dy = {0,0,1,-1};
-
+    static int[] graph;
+    static int[][] dp;
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
+        int N = Integer.parseInt(br.readLine());
+
+        graph = new int[N + 1];
         StringTokenizer st = new StringTokenizer(br.readLine());
 
-        int N = Integer.parseInt(st.nextToken());
-        int M = Integer.parseInt(st.nextToken());
-
-        graph = new int[N][M];
-        visited = new int[N][M][2];
-
-        for(int i = 0; i < graph.length; i++) {
-            String input = br.readLine();
-            for(int j =0; j < input.length(); j++) {
-                graph[i][j] = input.charAt(j) - '0';
-            }
+        for(int i = 1; i <= N; i++) {
+            graph[i] = Integer.parseInt(st.nextToken());
         }
 
-        Queue<int[]> queue = new LinkedList<>();
-        queue.add(new int[]{0, 0, 1, 0});
-        visited[0][0][0] = 1;
+        dp = new int[N + 1][3];
 
-        int min = Integer.MAX_VALUE;
-        while(!queue.isEmpty()) {
-            int[] cur = queue.poll();
-            int x = cur[0];
-            int y = cur[1];
-            int count = cur[2];
-            int broken = cur[3];
+        Stack<Integer> stack = new Stack<>();
+        for(int i = 1; i <= N; i++) {
 
-            if(x == N-1 && y == M-1) {
-                min = Math.min(min, count);
-                break;
+            while(!stack.isEmpty() && graph[stack.peek()] <= graph[i]) {
+                stack.pop();
             }
+            dp[i][2] += stack.size();
+            if(!stack.isEmpty()) {
+                dp[i][1] = stack.peek();
+            }
+            stack.push(i);
+        }
 
-            for(int i = 0;i < 4; i++) {
-                int nx = x + dx[i];
-                int ny = y + dy[i];
+        stack.clear();
 
-                if(nx < 0 || nx >= graph.length || ny < 0 || ny >= graph[0].length) continue;
+        for(int i = N; i>= 1; i--) {
 
-                if(graph[nx][ny] == 0) {
-                    if(visited[nx][ny][0] == 0) {
-                        visited[nx][ny][0] = 1;
-                        queue.add(new int[]{nx, ny, count +1, broken});
-                    }
-                } else {
-                    if(broken == 0 && visited[nx][ny][1] == 0 ) {
-                        visited[nx][ny][1] = 1;
-                        queue.add(new int[]{nx, ny, count + 1, 1});
+            while(!stack.isEmpty() && graph[stack.peek()] <= graph[i]) {
+                stack.pop();
+            }
+            dp[i][2] += stack.size();
+            if(!stack.isEmpty()) {
+                int tmp =  stack.peek();
+                if(dp[i][1] == 0 || Math.abs(i - tmp) < Math.abs(dp[i][1] - i)) {
+                    dp[i][1] = tmp;
+                }
+                else if(Math.abs(i - tmp) == Math.abs(dp[i][1] - i)) {
+                    if(tmp < dp[i][1]) {
+                        dp[i][1] = tmp;
                     }
                 }
+
+            }
+            stack.push(i);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for(int i = 1; i <= N; i++) {
+            if(dp[i][2] == 0) {
+                sb.append("0").append("\n");
+            } else {
+                sb.append(dp[i][2] + " " + dp[i][1]).append("\n");
             }
         }
-
-        if(min == Integer.MAX_VALUE) {
-            System.out.println(-1);
-        } else {
-            System.out.println(min);
-        }
+        System.out.println(sb);
     }
-
 }
