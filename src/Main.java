@@ -3,41 +3,69 @@ import java.io.*;
 
 
 class Main {
-    static String input, goal;
+    static int[] graph;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        input = br.readLine();
-        goal = br.readLine();
+        int N = Integer.parseInt(br.readLine());
+        graph = new int[N + 1];
 
-        if(dfs(goal)) {
-            System.out.println(1);
-        } else {
-            System.out.println(0);
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        for(int i = 1; i <= N; i++) {
+            graph[i] = Integer.parseInt(st.nextToken());
         }
-    }
 
-    private static boolean dfs(String tmp) {
-        boolean isPossible = false;
+        int[] counts = new int[N+1];
+        int[] nums = new int[N+1];
 
-        if(tmp.length() == input.length()) {
-            if(tmp.equals(input)) {
-                return true;
+        Stack<Integer> stack = new Stack<>();
+        for(int i = 1; i <= N; i++) {
+            int cur = graph[i];
+
+            while(!stack.isEmpty() && graph[stack.peek()] <= cur) {
+                stack.pop();
             }
-            return false;
+            counts[i] += stack.size();
+            if(!stack.isEmpty()) {
+                nums[i] = stack.peek();
+            }
+            stack.push(i);
         }
 
-        char c = tmp.charAt(tmp.length() -1);
-        char s = tmp.charAt(0);
-        if(c == 'A') {
-            isPossible |= dfs(tmp.substring(0, tmp.length() -1));
+        stack.clear();
+
+        for(int i = N; i >= 1; i--) {
+            int cur = graph[i];
+
+            while(!stack.isEmpty() && cur >= graph[stack.peek()]) {
+                stack.pop();
+            }
+
+            counts[i] += stack.size();
+
+            if(!stack.isEmpty()) {
+                if(nums[i] == 0 || Math.abs(i - nums[i]) > Math.abs(i - stack.peek())) {
+                    nums[i] = stack.peek();
+                }
+                else if(Math.abs(i - nums[i]) == Math.abs(i - stack.peek())) {
+                    if(nums[i] > stack.peek()) {
+                        nums[i] = stack.peek();
+                    }
+                }
+            }
+            stack.push(i);
         }
-        if(s == 'B') {
-            StringBuilder sb = new StringBuilder();
-            sb.append(tmp).reverse();
-            isPossible |= dfs(sb.toString().substring(0, tmp.length() -1));
+
+        StringBuilder sb = new StringBuilder();
+
+        for(int i = 1; i <= N; i++) {
+            if(counts[i] == 0) {
+                sb.append("0").append('\n');
+            } else {
+                sb.append(counts[i] + " " + nums[i]).append('\n');
+            }
         }
-        return isPossible;
+        System.out.println(sb);
     }
 }
