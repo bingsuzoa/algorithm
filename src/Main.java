@@ -1,71 +1,72 @@
 import java.util.*;
 import java.io.*;
 
-
 class Main {
+    static int N, a, b;
     static int[] graph;
+    static StringBuilder sb = new StringBuilder();
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        int N = Integer.parseInt(br.readLine());
-        graph = new int[N + 1];
-
         StringTokenizer st = new StringTokenizer(br.readLine());
-        for(int i = 1; i <= N; i++) {
-            graph[i] = Integer.parseInt(st.nextToken());
+        N = Integer.parseInt(st.nextToken());
+        a = Integer.parseInt(st.nextToken());
+        b = Integer.parseInt(st.nextToken());
+
+        graph = new int[N];
+
+        int tag = 1;
+        int idx = 0;
+        int max = 0;
+        while(a > 0) {
+            if(idx >= graph.length) {
+                System.out.println(-1);
+                return;
+            }
+            graph[idx++] = tag++;
+            a--;
         }
 
-        int[] counts = new int[N+1];
-        int[] nums = new int[N+1];
-
-        Stack<Integer> stack = new Stack<>();
-        for(int i = 1; i <= N; i++) {
-            int cur = graph[i];
-
-            while(!stack.isEmpty() && graph[stack.peek()] <= cur) {
-                stack.pop();
-            }
-            counts[i] += stack.size();
-            if(!stack.isEmpty()) {
-                nums[i] = stack.peek();
-            }
-            stack.push(i);
-        }
-
-        stack.clear();
-
-        for(int i = N; i >= 1; i--) {
-            int cur = graph[i];
-
-            while(!stack.isEmpty() && cur >= graph[stack.peek()]) {
-                stack.pop();
-            }
-
-            counts[i] += stack.size();
-
-            if(!stack.isEmpty()) {
-                if(nums[i] == 0 || Math.abs(i - nums[i]) > Math.abs(i - stack.peek())) {
-                    nums[i] = stack.peek();
-                }
-                else if(Math.abs(i - nums[i]) == Math.abs(i - stack.peek())) {
-                    if(nums[i] > stack.peek()) {
-                        nums[i] = stack.peek();
-                    }
-                }
-            }
-            stack.push(i);
-        }
-
-        StringBuilder sb = new StringBuilder();
-
-        for(int i = 1; i <= N; i++) {
-            if(counts[i] == 0) {
-                sb.append("0").append('\n');
+        if(idx == graph.length) {
+            if(b == 1) {
+                getAnswer(0);
             } else {
-                sb.append(counts[i] + " " + nums[i]).append('\n');
+                System.out.println(-1);
             }
+            return;
         }
+
+        max = tag - 1;
+        tag = 1;
+        idx = graph.length - 1;
+        while(b > 1) {
+            if(max < tag || idx < 0 || graph[idx] != 0) {
+                System.out.println(-1);
+                return;
+            }
+            graph[idx--] = tag++;
+            b--;
+        }
+
+        int need = 0;
+        for(int i = 0; i < graph.length; i++) {
+            if(graph[i] == 0) need++;
+        }
+        getAnswer(need);
+    }
+
+    private static void getAnswer(int count) {
+        sb.setLength(0);
+
+        for(int i = 0; i < count; i++) {
+            sb.append(1).append(' ');
+        }
+        for(int v : graph) {
+            if(v == 0) continue;
+            sb.append(v).append(' ');
+        }
+
         System.out.println(sb);
     }
 }
