@@ -2,71 +2,192 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static int N, a, b;
-    static int[] graph;
-    static StringBuilder sb = new StringBuilder();
+    static int N,M;
+    static int[][] graph;
+    static List<int[]> list = new ArrayList<>();
+    static int answer = Integer.MAX_VALUE;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         StringTokenizer st = new StringTokenizer(br.readLine());
         N = Integer.parseInt(st.nextToken());
-        a = Integer.parseInt(st.nextToken());
-        b = Integer.parseInt(st.nextToken());
+        M = Integer.parseInt(st.nextToken());
 
-        graph = new int[N];
+        graph = new int[N][M];
 
-        int tag = 1;
-        int idx = 0;
-        int max = 0;
-        while(a > 0) {
-            if(idx >= graph.length) {
-                System.out.println(-1);
-                return;
+        for(int i =0 ; i < N; i++) {
+            StringTokenizer st1 = new StringTokenizer(br.readLine());
+            for(int j = 0;j < M; j++) {
+                graph[i][j] = Integer.parseInt(st1.nextToken());
+                if(graph[i][j] != 0) {
+                    if(graph[i][j] == 6)continue;
+                    list.add(new int[]{i,j});
+                }
             }
-            graph[idx++] = tag++;
-            a--;
         }
 
-        if(idx == graph.length) {
-            if(b == 1) {
-                getAnswer(0);
-            } else {
-                System.out.println(-1);
-            }
+        dfs(0);
+        System.out.println(answer);
+    }
+    private static void dfs(int cur) {
+        if(cur == list.size()) {
+            check();
             return;
         }
 
-        max = tag - 1;
-        tag = 1;
-        idx = graph.length - 1;
-        while(b > 1) {
-            if(max < tag || idx < 0 || graph[idx] != 0) {
-                System.out.println(-1);
-                return;
-            }
-            graph[idx--] = tag++;
-            b--;
-        }
+        int[] tmp = list.get(cur);
+        int x = tmp[0];
+        int y = tmp[1];
+        int n = graph[x][y];
 
-        int need = 0;
-        for(int i = 0; i < graph.length; i++) {
-            if(graph[i] == 0) need++;
+        if(n == 1) {
+            right(x, y);
+            dfs(cur + 1);
+            rollRight(x, y);
+
+            left(x, y);
+            dfs(cur + 1);
+            rollLeft(x, y);
+
+            up(x,y);
+            dfs(cur + 1);
+            rollUp(x, y);
+
+            down(x,y);
+            dfs(cur + 1);
+            rollDown(x, y);
         }
-        getAnswer(need);
+        else if(n == 2) {
+            right(x,y);
+            left(x,y);
+            dfs(cur + 1);
+            rollLeft(x,y);
+            rollRight(x,y);
+
+
+            up(x,y);
+            down(x,y);
+            dfs(cur + 1);
+            rollDown(x, y);
+            rollUp(x, y);
+        }
+        else if(n == 3) {
+            up(x, y);
+            right(x,y);
+            dfs(cur + 1);
+            rollUp(x, y);
+
+            down(x, y);
+            dfs(cur + 1);
+            rollRight(x, y);
+
+            left(x, y);
+            dfs(cur + 1);
+            rollDown(x, y);
+
+            up(x, y);
+            dfs(cur + 1);
+            rollUp(x, y);
+            rollLeft(x, y);
+        }
+        else if(n == 4) {
+            left(x, y);
+            up(x, y);
+            right(x, y);
+            dfs(cur + 1);
+            rollLeft(x, y);
+
+            down(x, y);
+            dfs(cur + 1);
+            rollUp(x, y);
+
+            left(x, y);
+            dfs(cur + 1);
+            rollRight(x, y);
+
+            up(x, y);
+            dfs(cur + 1);
+            rollUp(x, y);
+            rollLeft(x,y);
+        }
+        else {
+            up(x, y);
+            down(x, y);
+            right(x, y);
+            left(x, y);
+            dfs(cur + 1);
+            rollLeft(x, y);
+            rollRight(x,y);
+            rollDown(x, y);
+            rollUp(x, y);
+        }
     }
 
-    private static void getAnswer(int count) {
-        sb.setLength(0);
-
-        for(int i = 0; i < count; i++) {
-            sb.append(1).append(' ');
+    private static void check() {
+        int count = 0;
+        for(int i = 0; i < graph.length; i++) {
+            for(int j = 0; j < graph[0].length; j++) {
+                if(graph[i][j] == 0) {
+                    count++;
+                }
+            }
         }
-        for(int v : graph) {
-            if(v == 0) continue;
-            sb.append(v).append(' ');
-        }
+        answer = Math.min(answer, count);
+    }
 
-        System.out.println(sb);
+
+    private static void down(int x, int y) {
+        for(int i = x+1; i < graph.length; i++) {
+            if(graph[i][y] == 6) break;
+            if(graph[i][y] <= 0) graph[i][y] -= 1;
+        }
+    }
+
+    private static void rollDown(int x, int y) {
+        for(int i = x+1; i < graph.length; i++) {
+            if(graph[i][y] == 6) break;
+            if(graph[i][y] < 0) graph[i][y] += 1;
+        }
+    }
+
+    private static void up(int x, int y) {
+        for(int i = x-1; i >= 0; i--) {
+            if(graph[i][y] == 6) break;
+            if(graph[i][y] <= 0) graph[i][y] -= 1;
+        }
+    }
+
+    private static void rollUp(int x, int y) {
+        for(int i = x-1; i >= 0; i--) {
+            if(graph[i][y] == 6) break;
+            if(graph[i][y] < 0) graph[i][y] += 1;
+        }
+    }
+
+    private static void left(int x, int y) {
+        for(int i = y-1; i >= 0; i--) {
+            if(graph[x][i] == 6) break;
+            if(graph[x][i] <= 0) graph[x][i] -= 1;
+        }
+    }
+    private static void rollLeft(int x, int y) {
+        for (int i = y - 1; i >= 0; i--) {
+            if (graph[x][i] == 6) break;
+            if (graph[x][i] < 0) graph[x][i] += 1;
+        }
+    }
+
+    private static void right(int x, int y) {
+        for(int i = y + 1; i < graph[0].length; i++) {
+            if(graph[x][i] == 6) break;
+            if(graph[x][i] <= 0) graph[x][i] -= 1;
+        }
+    }
+    private static void rollRight(int x, int y) {
+        for(int i = y + 1; i < graph[0].length; i++) {
+            if(graph[x][i] == 6) break;
+            if(graph[x][i] < 0) graph[x][i] += 1;
+        }
     }
 }
