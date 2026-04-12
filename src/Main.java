@@ -2,31 +2,34 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static int N,K;
     static int[] graph;
+    static int[] dp;
+    static StringBuilder sb = new StringBuilder();
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        StringTokenizer st = new StringTokenizer(br.readLine());
-        N = Integer.parseInt(st.nextToken());
-        K = Integer.parseInt(st.nextToken());
+        int N = Integer.parseInt(br.readLine());
+        while(N --> 0) {
+            int n = Integer.parseInt(br.readLine());
+            graph = new int[n];
 
-        graph = new int[K+1];
-
-        for(int i =0; i < N; i++) {
-            StringTokenizer st1 = new StringTokenizer(br.readLine());
-            int w = Integer.parseInt(st1.nextToken());
-            int v = Integer.parseInt(st1.nextToken());
-
-            for(int j = K; j >= w; j--) {
-                graph[j] = Math.max(graph[j], graph[j - w] + v);
+            StringTokenizer st = new StringTokenizer(br.readLine());
+            for(int i = 0; i < graph.length; i++) {
+                graph[i] = Integer.parseInt(st.nextToken());
             }
+
+            int goal = Integer.parseInt(br.readLine());
+            dp = new int[goal + 1];
+            dp[0] = 1;
+
+            for(int coin : graph) {
+                for(int i = coin; i <= goal; i++) {
+                    dp[i] += dp[i - coin];
+                }
+            }
+            sb.append(dp[goal]).append("\n");
         }
-        int max = 0;
-        for(int i =0; i < graph.length; i++) {
-            max = Math.max(max, graph[i]);
-        }
-        System.out.println(max);
+        System.out.println(sb);
     }
 }
