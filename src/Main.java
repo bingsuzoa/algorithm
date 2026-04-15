@@ -2,35 +2,48 @@ import java.util.*;
 import java.io.*;
 
 class Main {
+    static long[] minDp;
+    static StringBuilder sb = new StringBuilder();
+    static long min, max;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        StringTokenizer st = new StringTokenizer(br.readLine());
+        int N = Integer.parseInt(br.readLine());
+        minDp = new long[101];
+        Arrays.fill(minDp, Long.MAX_VALUE);
+        minDp[2]=1; minDp[3]=7; minDp[4]=4; minDp[5]=2; minDp[6]=6; minDp[7]=8;
 
-        long A = Long.parseLong(st.nextToken());
-        long B = Long.parseLong(st.nextToken());
-
-        System.out.println(check(B) - check(A - 1));
-    }
-
-    private static long check(long num) {
-        long count = 0;
-        long totalNumbers = num + 1;
-
-        for(int i = 0; (1L << i) <= num; i++) {
-            long cycle = 1L << (i+1);
-            long halfCycle = 1L << (i);
-
-            count += (totalNumbers / cycle) * halfCycle;
-
-            long remainder = totalNumbers % cycle;
-            if(remainder > halfCycle) {
-                count += (remainder - halfCycle);
+        for(int i = 8; i < minDp.length; i++) {
+            for(int j = 2; j <= 7; j++) {
+                if(minDp[i - j] == Long.MAX_VALUE) continue;
+                String result = minDp[i - j] + (j == 6 ? "0" : String.valueOf(minDp[j]));
+                minDp[i] = Math.min(minDp[i], Long.parseLong(result));
             }
         }
-        return count;
+
+        while(N --> 0) {
+            int count = Integer.parseInt(br.readLine());
+            min = minDp[count];
+
+            StringBuilder tmp = new StringBuilder();
+            int cur = count;
+            if(count % 2 == 0) {
+                while(cur > 0) {
+                    tmp.append(1);
+                    cur -= 2;
+                }
+            } else {
+                tmp.append(7);
+                cur -= 3;
+                while(cur > 0) {
+                    tmp.append(1);
+                    cur -=2;
+                }
+            }
+
+            sb.append(min + " " + tmp.toString()).append("\n");
+        }
+        System.out.println(sb);
     }
-
-
 }
