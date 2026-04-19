@@ -2,69 +2,54 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static int N,M;
-    static int[][] graph;
-    static int[][] lefts;
-    static int[][] rights;
-    static int[][] dp;
+    static int N, K;
+    static PriorityQueue<int[]> pq;
+    static PriorityQueue<Long> weights;
+    static long answer = 0;
+
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         StringTokenizer st = new StringTokenizer(br.readLine());
         N = Integer.parseInt(st.nextToken());
-        M = Integer.parseInt(st.nextToken());
+        K = Integer.parseInt(st.nextToken());
 
-        graph = new int[N][M];
-        lefts = new int[N][M];
-        rights = new int[N][M];
-        dp = new int[N][M];
+        pq = new PriorityQueue<>((o1,o2) -> {
+            return o1[0] - o2[0];
+        });
 
-        for(int i = 0; i < graph.length; i++) {
+        while(N --> 0) {
             StringTokenizer st1 = new StringTokenizer(br.readLine());
-            for(int j = 0; j < graph[i].length; j++) {
-                graph[i][j] = Integer.parseInt(st1.nextToken());
-            }
+            int M = Integer.parseInt(st1.nextToken());
+            int V = Integer.parseInt(st1.nextToken());
+            pq.add(new int[]{M,V});
         }
 
-        for(int i = 0; i < graph.length; i++) {
-            for(int j = 0;j < graph[i].length; j++) {
-                lefts[i][j] = -2000000001;
-                rights[i][j] = -2000000001;
-            }
+        weights = new PriorityQueue<>((o1,o2) -> {
+            return o1.compareTo(o2);
+        });
+
+        while(K --> 0) {
+            weights.add(Long.parseLong(br.readLine()));
         }
 
-        for(int j = 0; j < graph[0].length; j++) {
-            if(j == 0) {
-                lefts[0][j] = graph[0][j];
-                rights[0][j] = graph[0][j];
-            } else {
-                lefts[0][j] = lefts[0][j-1] + graph[0][j];
-                rights[0][j] = lefts[0][j];
+        PriorityQueue<int[]> tmp = new PriorityQueue<>((o1,o2) -> {
+            if(o1[1] == o2[1]) {
+                return o1[0] - o2[0];
             }
-            dp[0][j] = lefts[0][j];
-        }
+            return o2[1] - o1[1];
+        });
+        while(!weights.isEmpty()) {
+            long bagWeight = weights.poll();
 
-        for(int i = 1; i < graph.length; i++) {
-            for(int j = 0; j < graph[i].length; j++) {
-                if(j == 0) {
-                    lefts[i][j] = Math.max(lefts[i][j], dp[i-1][j] + graph[i][j]);
-                } else {
-                    lefts[i][j] = Math.max(lefts[i][j], Math.max(dp[i-1][j], lefts[i][j-1]) + graph[i][j]);
-                }
+            while(!pq.isEmpty() && pq.peek()[0] <= bagWeight) {
+                tmp.add(pq.poll());
             }
-            for(int j = graph[i].length - 1; j >= 0; j--) {
-                if(j == M-1) {
-                    rights[i][j] = Math.max(rights[i][j], dp[i-1][j] + graph[i][j]);
-                } else {
-                    rights[i][j] = Math.max(rights[i][j], Math.max(dp[i-1][j], rights[i][j+1]) + graph[i][j]);
-                }
-            }
-            for(int j = 0;j < graph[i].length; j++) {
-                dp[i][j] = Math.max(lefts[i][j], rights[i][j]);
+
+            if(!tmp.isEmpty()) {
+                answer += tmp.poll()[1];
             }
         }
-
-        System.out.println(dp[N-1][M-1]);
+        System.out.println(answer);
     }
-
 }
