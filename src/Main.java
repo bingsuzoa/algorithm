@@ -2,64 +2,72 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static int[][] graph;
-    static int[][][] dp;
-
+    static int N, M;
+    static List<int[]>[] list;
+    static long[] dp;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         StringTokenizer st = new StringTokenizer(br.readLine());
-        int N = Integer.parseInt(st.nextToken());
-        int M = Integer.parseInt(st.nextToken());
+        N = Integer.parseInt(st.nextToken());
+        M = Integer.parseInt(st.nextToken());
 
-        graph = new int[N][M];
-        dp = new int[N][M][2];
+        list = new ArrayList[N + 1];
+        dp = new long[N + 1];
 
-        for(int i = 0;i < graph.length; i++) {
+        for(int i = 0;i < list.length; i++) {
+            list[i] = new ArrayList<>();
+        }
+        Arrays.fill(dp, Long.MAX_VALUE);
+        dp[1] = 0;
+
+        for(int i =0 ;i < M; i++) {
             StringTokenizer st1 = new StringTokenizer(br.readLine());
-            for(int j = 0; j < graph[0].length; j++) {
-                graph[i][j] = Integer.parseInt(st1.nextToken());
+            int A = Integer.parseInt(st1.nextToken());
+            int B = Integer.parseInt(st1.nextToken());
+            list[A].add(new int[]{i, B});
+            list[B].add(new int[]{i, A});
+        }
+
+
+
+        PriorityQueue<long[]> pq = new PriorityQueue<>((o1, o2) -> {
+            return Long.compare(o1[0],o2[0]);
+        });
+
+        //초, 출발지, cycle
+        pq.add(new long[]{0, 1});
+        while(!pq.isEmpty()) {
+            long[] cur = pq.poll();
+            long minute = cur[0];
+            long from = cur[1];
+
+            if(dp[(int)from] < minute) continue;
+
+            if(from == N) {
+                System.out.println(minute);
+                return;
             }
-        }
 
-        for(int i = 0; i < dp.length; i++) {
-            for(int j = 0; j < dp[i].length; j++) {
-                Arrays.fill(dp[i][j], -1000001);
-            }
-        }
-        dp[0][0][0] = graph[0][0];
-        dp[0][0][1] = graph[0][0];
+            for(int[] next : list[(int)from]) {
+                int time = next[0];
+                int to = next[1];
 
-        for(int j = 1; j < graph[0].length; j++) {
-            dp[0][j][0] = dp[0][j-1][0] + graph[0][j];
-            dp[0][j][1] = dp[0][j][0];
-        }
-
-        for(int i = 1; i < graph.length; i++) {
-            //left
-            for(int j = 0; j < graph[0].length; j++) {
-                int up = Math.max(dp[i-1][j][0], dp[i-1][j][1]);
-                if(j == 0) {
-                    dp[i][j][0] = Math.max(dp[i][j][0], up + graph[i][j]);
+                long nextTime;
+                if(minute <= time) {
+                    nextTime = time;
                 } else {
-                    dp[i][j][0] = Math.max(dp[i][j][0], up + graph[i][j]);
-                    dp[i][j][0] = Math.max(dp[i][j][0], dp[i][j-1][0]  + graph[i][j]);
+                    long cycle = ((minute - time) + (M - 1)) / M;
+                    nextTime = time + M * cycle;
+                }
+
+                if(dp[to] > nextTime + 1) {
+                    dp[to] = nextTime + 1;
+                    pq.add(new long[]{nextTime + 1, to});
                 }
             }
-
-            //right
-            for(int j = graph[0].length -1; j >= 0; j--) {
-                int up = Math.max(dp[i-1][j][0], dp[i-1][j][1]);
-
-                if(j == graph[0].length -1) {
-                    dp[i][j][1] = Math.max(dp[i][j][1], up  + graph[i][j]);
-                } else {
-                    dp[i][j][1] = Math.max(dp[i][j][1], up  + graph[i][j]);
-                    dp[i][j][1] = Math.max(dp[i][j][1], dp[i][j+1][1]  + graph[i][j]);
-                }
-            }
         }
-        System.out.println(Math.max(dp[N-1][M-1][0], dp[N-1][M-1][1]));
     }
+
 }
