@@ -1,73 +1,110 @@
 import java.util.*;
-import java.io.*;
 
-class Main {
-    static int N, M;
-    static List<int[]>[] list;
-    static long[] dp;
+class Solution {
+    static int[] dx = new int[]{1,-1,0,0};
+    static int[] dy = new int[]{0,0,1,-1};
+    static int[] opposite = new int[]{1, 0, 3, 2};
 
-    public static void main(String[] args) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    static boolean[][][] visited;
+    static int[][] graph;
+    static int[][] dp;
 
-        StringTokenizer st = new StringTokenizer(br.readLine());
-        N = Integer.parseInt(st.nextToken());
-        M = Integer.parseInt(st.nextToken());
+    static int[][] infos;
+    static int answer = 0;
 
-        list = new ArrayList[N + 1];
-        dp = new long[N + 1];
+    public int solution(int[][] grid) {
+        graph = grid;
+        visited = new boolean[graph.length][graph[0].length][2];
 
-        for(int i = 0;i < list.length; i++) {
-            list[i] = new ArrayList<>();
-        }
-        Arrays.fill(dp, Long.MAX_VALUE);
-        dp[1] = 0;
+        infos = new int[][]{{}, {2,3},{0,1},{0,1,2,3},{3,1},{1,2},{2,0},{3,0}};
 
-        for(int i =0 ;i < M; i++) {
-            StringTokenizer st1 = new StringTokenizer(br.readLine());
-            int A = Integer.parseInt(st1.nextToken());
-            int B = Integer.parseInt(st1.nextToken());
-            list[A].add(new int[]{i, B});
-            list[B].add(new int[]{i, A});
-        }
-
-
-
-        PriorityQueue<long[]> pq = new PriorityQueue<>((o1, o2) -> {
-            return Long.compare(o1[0],o2[0]);
-        });
-
-        //초, 출발지, cycle
-        pq.add(new long[]{0, 1});
-        while(!pq.isEmpty()) {
-            long[] cur = pq.poll();
-            long minute = cur[0];
-            long from = cur[1];
-
-            if(dp[(int)from] < minute) continue;
-
-            if(from == N) {
-                System.out.println(minute);
-                return;
-            }
-
-            for(int[] next : list[(int)from]) {
-                int time = next[0];
-                int to = next[1];
-
-                long nextTime;
-                if(minute <= time) {
-                    nextTime = time;
-                } else {
-                    long cycle = ((minute - time) + (M - 1)) / M;
-                    nextTime = time + M * cycle;
-                }
-
-                if(dp[to] > nextTime + 1) {
-                    dp[to] = nextTime + 1;
-                    pq.add(new long[]{nextTime + 1, to});
-                }
+        dp = new int[graph.length][graph[0].length];
+        for(int i = 0;i < graph.length; i++) {
+            for(int j = 0;j < graph[0].length; j++) {
+                dp[i][j] = graph[i][j];
             }
         }
+        dfs(0,0, 2);
+        return answer;
     }
 
+
+    private static void dfs(int x, int y, int out) {
+        if(x == graph.length - 1 && y == graph[0].length -1) {
+            if(crossCheck()) {
+                answer++;
+            }
+            return;
+        }
+
+        int nx = x + dx[out];
+        int ny = y + dy[out];
+        int oppo = opposite[out];
+
+        if(isOut(nx, ny) || graph[nx][ny] == -1) return;
+
+        int axis = (out == 0 || out == 1) ? 0 : 1; //0이면 가로, 1이면 세로
+        if(visited[nx][ny][axis]) return;
+
+        int nextType = graph[nx][ny];
+        if(nextType > 0) {
+            if(canConnect(nx, ny, oppo)) {
+                visited[nx][ny][axis] = true;
+                for(int dir : infos[nextType]) {
+                    if(dir == oppo) continue;
+                    dfs(nx, ny, dir);
+                }
+                visited[nx][ny][axis] = false;
+            }
+        }
+        else if(nextType == 0) {
+            for(int t = 1; t <= 7; t++) {
+                if(canConnect(nx, ny, t)) {
+                    visited[nx][ny][axis] = true;
+                    dp[nx][ny] = t;
+                    for(int dir : infos[nextType]) {
+                        if(oppo == dir) continue;
+                        dfs(nx, ny, dir);
+                    }
+                    dp[nx][ny] = 0;
+                    visited[nx][ny][axis] = false;
+                }
+            }
+        }
+
+    }
+    private static boolean crossCheck() {
+        for(int i = 0; i< dp.length; i++) {
+            for(int j =0; j < dp[i].length; j++) {
+                if(dp[i][j] != 3) continue;
+
+                int nx;
+                int ny;
+                for(int k = 0; k< 4; k++) {
+                    nx = i + dx[k];
+                    ny = j + dy[k];
+
+                    if(isOut(nx, ny)) return false;
+                    if(dp[nx][ny] <= 0 || !canConnect(nx, ny, opposite[k])) return false;
+                }
+            }
+        }
+        return true;
+    }
+    private static boolean canConnect(int nx, int ny, int dir) {
+        int num = graph[nx][ny];
+
+        int[] info = infos[num];
+        for(int in : info) {
+            if(in == dir) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isOut(int x, int y) {
+        if(x >= graph.length || x < 0 || y >= graph[0].length || y < 0) return true;
+        return false;
+    }
 }
