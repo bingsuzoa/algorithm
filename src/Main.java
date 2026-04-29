@@ -1,131 +1,122 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 class Solution {
-    static int[][] graph;
-    static int[][] types;
-    static int[] opps;
-    static int[][] results;
-    static int[] dx = {1,-1,0,0};
-    static int[] dy = {0,0,1,-1};
-    static int N,M;
-    static boolean[][][] visited;
-    static int answer;
+    static long[] lens;
+    static long[] sums;
+    static int[] array;
 
     public static void main(String[] args) {
-        int[][] temp = new int[][]{{1, 0, 0, 0, 0, -1, -1}, {-1, 0, 0, 1, 0, 0, 1}};
+//        int[] arr = new int[]{16952, 70276, 16771, 37992, 87549, 54906, 36718, 20478, 57088, 27916, 51509, 83422, 51707, 18807, 80859, 2673, 37734, 93380};
+//        long l = 149845;
+//        long r = 228204 ;
+        int[] arr = new int[]{3,2,3,1,1};
+        long l = 5;
+        long r = 7;
+//        int[] arr = new int[]{2,2,2};
+//        long l = 2;
+//        long r = 2;
         Solution s = new Solution();
-        System.out.println(s.solution(temp));
+        long[] answer = s.solution(arr, l, r);
+        System.out.println(answer[0] + " " + answer[1]);
     }
 
-    public int solution(int[][] grid) {
-        answer = 0;
-        graph = grid;
-        types = new int[][] {{}, {2, 3}, {0, 1}, {0,1,2,3}, {1,3}, {1,2},{0,2},{0,3}};
-        opps = new int[]{1, 0,3,2};
-        M = graph.length;
-        N = graph[0].length;
-        visited = new boolean[M][N][2];
-        results = new int[M][N];
-        visited[0][0][0] = true;
+    public long[] solution(int[] arr, long l, long r) {
+        array = arr;
+        lens = new long[arr.length];
+        sums = new long[arr.length];
 
-        for(int i = 0;i < graph.length; i++) {
-            for(int j = 0;j < graph[0].length; j++) {
-                results[i][j] = graph[i][j];
-            }
+        lens[0] = array[0];
+        sums[0] = (long)array[0] * array[0];
+
+        for(int i = 1; i < array.length; i++) {
+            lens[i] = array[i] + lens[i-1];
+            sums[i] = ((long)array[i] * array[i]) + sums[i-1];
         }
-        dfs(0,0,2);
-        return answer;
-    }
+        long[] answer = new long[2];
+        answer[0] = getSum(r) - getSum(l-1);
 
-    private static void dfs(int x, int y, int outDir) {
-        if(x == M-1 && y == N-1) {
-            if(check()) {
-                answer++;
-            }
-            return;
+
+        /////////////step 1
+        long W = r - l + 1;
+        long totalLen = lens[lens.length -1];
+        long limitP = totalLen - W + 1;
+
+        List<Long> list = new ArrayList<>();
+        list.add(1L);
+        list.add(limitP + 1);
+
+        for(int i = 0; i < lens.length - 1; i++) {
+            long changePos = lens[i] + 1;
+
+            list.add(changePos);
+            list.add(changePos - W + 1);
         }
-        int nx = x + dx[outDir];
-        int ny = y + dy[outDir];
-        int oppo = opps[outDir];
+        Collections.sort(list);
 
-        if(isOut(nx, ny) || graph[nx][ny] == -1) return;
-        int newType = results[nx][ny];
-        int original = results[nx][ny];
+        //////////////step2
+        long count = 0;
+        for(int i = 0; i < list.size() -1; i++) {
+            long left = list.get(i);
+            long right = list.get(i+1);
+            if(left == right) continue;
 
-        if(newType > 0) {
-            if(canConnect(oppo, newType)) {
-                for(int dir : types[newType]) {
-                    int axis = (dir == 2 || dir == 3) ? 0 : 1;
-                    if(oppo == dir || visited[nx][ny][axis]) continue;
+            if(left + W - 1 >= array.length || left - 1 < 0) {
+                continue;
+            }
+            long initSum = getSum(left + W -1) - getSum(left -1);
 
-                    results[nx][ny] = newType;
-                    visited[nx][ny][axis] = true;
 
-                    if(newType != 3) {
-                        dfs(nx, ny, dir);
-                    }
-                    else if(newType == 3 && dir == opps[oppo]) {
-                        dfs(nx, ny, dir);
-                    }
+            int out = array[getGroup(left)];
+            int in = left + W >= array.length ? 0 : array[getGroup(left + W)];
+            int diff = in - out;
 
-                    results[nx][ny] = original;
-                    visited[nx][ny][axis] = false;
+            if(diff == 0) {
+                if(initSum == answer[0]) {
+                    count += (right - left);
                 }
-            }
-        } else {
-            for(int i = 1; i <= 7; i++) {
-                if(canConnect(oppo, i)) {
-                    results[nx][ny] = i;
-
-                    for(int dir : types[i]) {
-                        int axis = (dir == 2 || dir == 3) ? 0 : 1;
-                        if(oppo == dir || visited[nx][ny][axis]) continue;
-
-                        visited[nx][ny][axis] = true;
-                        if(i != 3) {
-                            dfs(nx, ny, dir);
-                        }
-                        else if(i == 3 && dir == opps[oppo]) {
-                            dfs(nx, ny, dir);
-                        }
-                        visited[nx][ny][axis] = false;
+            } else {
+                long remain = answer[0] - initSum;
+                if(remain % diff == 0) {
+                    long n = remain / diff;
+                    if(n >= 0 && n < right - left) {
+                        count++;
                     }
-                    results[nx][ny] = 0;
                 }
             }
         }
+
+        return new long[]{answer[0], count};
     }
-    private static boolean check() {
-        for(int i =0; i< results.length; i++) {
-            for(int j =0 ;j < results[0].length; j++) {
-                if(i == 0 && j == 0) continue;
-                if(i == M - 1 && j == N - 1) continue;
-                int type = results[i][j];
-                if(type <= 0) continue;
 
-                for(int t : types[type]) {
-                    int nx = i + dx[t];
-                    int ny = j + dy[t];
-                    int opp = opps[t];
+    private long getSum(long goal) {
+        int lastIdx = getGroup(goal);
 
-                    if(isOut(nx, ny) || results[nx][ny] <= 0) return false;
-                    if(!canConnect(opp, results[nx][ny])) return false;
-                }
+        long lastLot = lens[lastIdx];
+        long sum = sums[lastIdx];
+
+        long diff = lastLot - goal;
+        long num = array[lastIdx] * diff;
+        return sum - num;
+    }
+
+    private int getGroup(long goal) {
+        int start = 0;
+        int end = array.length -1;
+
+        while(start <= end) {
+            int mid = (start + end) / 2;
+
+            if(lens[mid] == goal) {
+                return mid;
+            }
+            if(lens[mid] < goal) {
+                start = mid + 1;
+            } else {
+                end = mid - 1;
             }
         }
-        return true;
-    }
-    private static boolean canConnect(int dir, int type) {
-        for(int connect : types[type]) {
-            if(dir == connect) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean isOut(int x, int y) {
-        if(x >= M || x < 0 || y >= N || y < 0) return true;
-        return false;
+        return end + 1;
     }
 }
