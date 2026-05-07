@@ -1,131 +1,82 @@
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 class Solution {
-    static long[] lens;
-    static long[] sums;
-    static int[] array;
+    public int[] solution(int m, int n, int h, int w, int[][] drops) {
+        int[][] times = new int[m][n];
 
-    // public static void main(String[] args) {
-    //     int[] arr = new int[]{16952, 70276, 16771, 37992, 87549, 54906, 36718, 20478, 57088, 27916, 51509, 83422, 51707, 18807, 80859, 2673, 37734, 93380};
-    //     long l = 149845;
-    //     long r = 228204 ;
-    //    int[] arr = new int[]{3,2,3,1,1};
-    //    long l = 5;
-    //    long r = 7;
-    //    int[] arr = new int[]{2,2,2};
-    //    long l = 2;
-    //    long r = 2;
-    //     Solution s = new Solution();
-    //     long[] answer = s.solution(arr, l, r);
-    //     System.out.println(answer[0] + " " + answer[1]);
-    // }
-
-    public long[] solution(int[] arr, long l, long r) {
-        array = arr;
-        lens = new long[arr.length];
-        sums = new long[arr.length];
-
-        lens[0] = array[0];
-        sums[0] = (long)array[0] * array[0];
-
-        for(int i = 1; i < array.length; i++) {
-            lens[i] = array[i] + lens[i-1];
-            sums[i] = ((long)array[i] * array[i]) + sums[i-1];
+        for(int i = 0; i < times.length; i++) {
+            Arrays.fill(times[i], Integer.MAX_VALUE);
         }
-        long[] answer = new long[2];
-        answer[0] = getSum(r) - getSum(l-1);
 
-        List<Long> list = getDiffPos(answer[0], l, r);
-        long W = r - l + 1;
-        long count = 0;
+        for(int i = 0; i < drops.length; i++) {
+            int r = drops[i][0];
+            int c = drops[i][1];
+            times[r][c] = i + 1;
+        }
 
-        for(int i = 0; i < list.size() - 1; i++) {
-            long left = list.get(i);
-            long right = list.get(i+1);
-            if(left == right) continue;
+        int[][] rowMins = new int[m][n - w + 1];
+        int bestTime = -1;
+        int bestX = -1;
+        int bestY = -1;
 
-            long startP = left;
-            long endP = left + W - 1;
+        //row sliding
+        for(int i = 0; i < m; i++) {
+            Deque<Integer> dq = new ArrayDeque<>();
 
-            long initSum = getSum(endP) - getSum(startP -1);
-            long totalLen = lens[lens.length -1];
+            for(int j = 0; j < n; j++) {
 
-            int endLen = endP + 1 > totalLen ? 0 : getGroupIdx(endP + 1);
-            long d = array[endLen] - array[getGroupIdx(startP)];
-            if(d == 0) {
-                if(initSum == answer[0]) {
-                    count += (right - left);
+                while(!dq.isEmpty() && times[i][j] <= times[i][dq.peekLast()]) {
+                    dq.pollLast();
                 }
-            } else {
-                long remain = answer[0] - initSum;
-                if(remain % d == 0) {
-                    long n = remain / d;
-                    if(n >= 0 && n < (right - left)) {
-                        count++;
+                dq.addLast(j);
+
+                if(j - dq.peekFirst() + 1 > w) {
+                    dq.pollFirst();
+                }
+
+                if(j - w + 1 >= 0) {
+                    rowMins[i][j-w+1] = times[i][dq.peekFirst()];
+                }
+            }
+        }
+
+        //col sliding
+        for(int j = 0; j < n - w + 1; j++) {
+            Deque<Integer> dq = new ArrayDeque<>();
+
+            for(int i = 0; i < m; i++) {
+
+                while(!dq.isEmpty() && rowMins[i][j] <= rowMins[dq.peekLast()][j]) {
+                    dq.pollLast();
+                }
+                dq.addLast(i);
+
+                if(i - dq.peekFirst() + 1 > h) {
+                    dq.pollFirst();
+                }
+
+                if(i - h + 1 >= 0) {
+                    int currentTime = rowMins[dq.peekFirst()][j];
+
+                    int startX = i - h + 1;
+                    int startY = j;
+                    if(currentTime > bestTime) {
+                        bestTime = currentTime;
+                        bestX = startX;
+                        bestY = startY;
+                    }
+                    else if(currentTime == bestTime) {
+                        if(startX < bestX) {
+                            bestX = startX;
+                            bestY = startY;
+                        }
+                        else if(startX == bestX && startY < bestY) {
+                            bestY = startY;
+                        }
                     }
                 }
             }
-
         }
-        answer[1] = count;
-        return answer;
-    }
-
-    private List<Long> getDiffPos(long goal, long l, long r) {
-        long diff = r - l + 1;
-        List<Long> list = new ArrayList<>();
-        list.add(1L);
-
-        long totalLen = lens[lens.length-1];
-        long definedLen = totalLen - diff + 1;
-        list.add(definedLen + 1);
-        for(long len : lens) {
-            long endP = len + 1;
-            long startP = endP - diff + 1;
-            if(endP <= totalLen && startP >= 1 && startP <= totalLen) {
-                list.add(startP);
-            }
-
-            long startPP = len + 1;
-            long endPP = startPP + diff -1;
-            if(endPP <= totalLen && startPP >= 1 && startPP <= totalLen) {
-                list.add(startPP);
-            }
-        }
-        Collections.sort(list);
-        return list;
-    }
-
-
-    private long getSum(long l) {
-        int groupIdx = getGroupIdx(l);
-
-        long initLen = lens[groupIdx];
-        long initSum = sums[groupIdx];
-
-        long diff = initLen - l;
-        return initSum - array[groupIdx] * diff;
-
-    }
-
-    private int getGroupIdx(long l) {
-        int start = 0;
-        int end = lens.length -1;
-
-        while(start <= end) {
-            int mid = (start + end) / 2;
-
-            if(lens[mid] == l) {
-                return mid;
-            }
-            if(lens[mid] < l) {
-                start = mid + 1;
-            } else {
-                end = mid -1;
-            }
-        }
-        return end + 1;
+        return new int[]{bestX, bestY};
     }
 }
