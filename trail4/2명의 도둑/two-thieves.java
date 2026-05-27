@@ -23,7 +23,7 @@ public class Main {
                 int ey = j + M - 1;
 
                 if(ey >= grid[0].length) continue;
-                int left = dfs(i, sy, ey, sy, 0, 0);
+                int left = dfs(i, sy, ey, sy, 0);
 
                 for(int k = 0; k < grid.length; k++) {
                     for(int r = 0; r < grid[0].length; r++) {
@@ -33,7 +33,7 @@ public class Main {
                         if(i == k && !(ey < rsy || rey < sy)) continue;
                         if(rey >= grid[0].length) continue;
 
-                        int right = dfs(k, rsy, rey, rsy, 0, 0);
+                        int right = dfs(k, rsy, rey, rsy, 0);
                         answer = Math.max(answer, left + right);
 
                     }
@@ -43,19 +43,19 @@ public class Main {
         System.out.println(answer);
     }
     
-    private static int dfs(int row, int sy, int ey, int cy, int currentWeight, int currentSum) {
+    private static int dfs(int row, int sy, int ey, int cy, int currentWeight) {
         if(cy >= grid[0].length || cy > ey) {
-            return currentSum;
+            return 0;
         }
 
         int value = grid[row][cy];
         int having = 0;
 
         if(currentWeight + value <= C) {
-            having = dfs(row, sy, ey, cy + 1, currentWeight + value, currentSum + (int)Math.pow(value, 2));
+            having = dfs(row, sy, ey, cy + 1, currentWeight + value) + (int)Math.pow(value, 2);
         }
 
-        int skip = dfs(row, sy, ey, cy + 1, currentWeight, currentSum);
+        int skip = dfs(row, sy, ey, cy + 1, currentWeight);
         return Math.max(having, skip);
     }
 }
