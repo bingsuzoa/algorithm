@@ -1,13 +1,14 @@
-A,B = map(int, input().split())
+str = input()
+arr = str.split()
+a = int(arr[0])
+b = int(arr[1])
 
-if A < B:
-    first = 1
-else :
-    first = 0
+if a < b:
+    print("1", end=" ")
+else:
+    print("0", end=" ")
 
-if A == B:
-    second = 1
-else :
-    second = 0
-
-print(first, second)
+if a == b:
+    print("1")
+else:
+    print("0")
