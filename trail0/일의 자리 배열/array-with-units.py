@@ -1,12 +1,10 @@
 A,B = map(int, input().split())
 
-arr = []
-arr.append(A)
-arr.append(B)
+arr = [0] * 10
+arr[0] = A
+arr[1] = B
 
-for i in range(2, 10) :
-    value = arr[i-1] + arr[i-2]
-    value %= 10
-    arr.append(value)
+for i in range(2, len(arr)):
+    arr[i] = (arr[i-1] + arr[i-2]) % 10
 
 print(*arr)
