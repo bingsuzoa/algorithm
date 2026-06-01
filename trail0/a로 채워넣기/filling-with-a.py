@@ -1,6 +1,8 @@
-a = list(input())
+string = input()
 
-a[1] = 'a'
-a[-2] = 'a'
+len = len(string)
 
-print("".join(a))
+string = string[:1] + 'a' + string[2:]
+string = string[:len -2] + 'a' + string[len -1:]
+
+print(string)
