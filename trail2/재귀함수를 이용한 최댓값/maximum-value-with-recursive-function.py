@@ -2,11 +2,10 @@ n = int(input())
 arr = list(map(int, input().split()))
 
 # Please write your code here.
-def dfs(cur, arr) :
-    if cur == len(arr) :
-        return 0
-    
-    result = dfs(cur + 1, arr)
-    return arr[cur] if arr[cur] > result else result
+def dfs(n) :
+    if n == 0 :
+        return arr[0]
 
-print(dfs(0, arr))
+    return max(arr[n], dfs(n-1))
+
+print(dfs(n - 1))
