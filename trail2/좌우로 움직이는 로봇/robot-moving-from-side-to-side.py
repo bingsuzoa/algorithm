@@ -15,10 +15,6 @@ for e in coma :
         pos_a[a_t] = pos_a[a_t - 1] + (1 if dir == 'R' else -1)
         a_t += 1
 
-
-for t in range(a_t, len(pos_a)) :
-    pos_a[t] = pos_a[t-1] 
-
 b_t = 1
 for e in comb :
     t = int(e[0])
@@ -28,14 +24,19 @@ for e in comb :
         pos_b[b_t] = pos_b[b_t - 1] + (1 if dir == 'R' else -1)
         b_t += 1
 
-for t in range(b_t, len(pos_b)) :
-    pos_b[t] = pos_b[t-1]
 
+if a_t < b_t :
+    for t in range(a_t, b_t) :
+        pos_a[t] = pos_a[t-1]
+elif a_t > b_t :
+    for t in range(b_t, a_t) :
+        pos_b[t] = pos_b[t-1]
 
-ans = 0
-for t in range(1, len(pos_a)) :
-    if pos_a[t] == pos_b[t] :
-        if pos_a[t-1] != pos_b[t-1] :
-            ans += 1
+cnt = 0
+max_t = max(a_t, b_t)
 
-print(ans)
+for t in range(1, max_t) :
+    if pos_a[t] == pos_b[t] and pos_a[t-1] != pos_b[t-1] :
+        cnt += 1
+
+print(cnt)
